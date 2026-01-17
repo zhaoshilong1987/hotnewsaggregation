@@ -1,0 +1,26 @@
+{
+  "name": "热榜资讯APP",
+  "short_name": "热榜APP",
+  "description": "聚合全网热点资讯，实时同步各大平台热门话题、新闻排行榜",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#F97316",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["news", "social"],
+  "lang": "zh-CN"
+}

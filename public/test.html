@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>测试页面 - 全网热点</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 600px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 16px;
+    }
+    .status {
+      background: #f0f9ff;
+      border-left: 4px solid #3b82f6;
+      padding: 16px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+    }
+    .status-item {
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .status-label {
+      font-weight: 600;
+      color: #333;
+      min-width: 100px;
+    }
+    .status-value {
+      color: #666;
+    }
+    .success { color: #10b981; }
+    .error { color: #ef4444; }
+    .info {
+      background: #fffbeb;
+      border-left: 4px solid #f59e0b;
+      padding: 16px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+    }
+    .info-title {
+      font-weight: 600;
+      color: #92400e;
+      margin-bottom: 8px;
+    }
+    .info-text {
+      color: #78350f;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      text-align: center;
+    }
+    .btn-primary {
+      background: #3b82f6;
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #2563eb;
+      transform: translateY(-2px);
+    }
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #374151;
+    }
+    .btn-secondary:hover {
+      background: #d1d5db;
+    }
+    .timestamp {
+      text-align: center;
+      color: #999;
+      margin-top: 20px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>✅ 测试页面加载成功</h1>
+    <p class="subtitle">如果您能看到这个页面，说明 Vercel 部署是正常的</p>
+
+    <div class="status">
+      <div class="status-item">
+        <span class="status-label">页面状态:</span>
+        <span class="status-value success">✅ 正常加载</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">服务器:</span>
+        <span class="status-value" id="server">检测中...</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">响应时间:</span>
+        <span class="status-value" id="response-time">检测中...</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">协议:</span>
+        <span class="status-value" id="protocol">检测中...</span>
+      </div>
+    </div>
+
+    <div class="info">
+      <div class="info-title">💡 这说明什么？</div>
+      <p class="info-text">
+        如果您能看到这个测试页面，说明：<br>
+        1. ✅ Vercel 部署成功<br>
+        2. ✅ 域名解析正常<br>
+        3. ✅ 网络连接正常<br>
+        4. ✅ 可能是首页应用的配置问题
+      </p>
+    </div>
+
+    <div class="actions">
+      <a href="/" class="btn btn-primary">返回首页</a>
+      <a href="/index.html" class="btn btn-secondary">访问静态首页</a>
+    </div>
+
+    <div class="timestamp" id="timestamp"></div>
+  </div>
+
+  <script>
+    // 检测服务器信息
+    document.addEventListener('DOMContentLoaded', function() {
+      // 显示时间戳
+      const now = new Date();
+      document.getElementById('timestamp').textContent =
+        '页面加载时间: ' + now.toLocaleString('zh-CN');
+
+      // 检测协议
+      document.getElementById('protocol').textContent =
+        window.location.protocol.toUpperCase();
+
+      // 检测服务器
+      const server = window.location.hostname;
+      document.getElementById('server').textContent = server;
+
+      // 检测响应时间
+      const loadTime = performance.now();
+      document.getElementById('response-time').textContent =
+        loadTime.toFixed(2) + 'ms';
+
+      // 控制台输出调试信息
+      console.log('测试页面加载成功');
+      console.log('URL:', window.location.href);
+      console.log('User Agent:', navigator.userAgent);
+      console.log('Load Time:', loadTime + 'ms');
+    });
+  </script>
+</body>
+</html>

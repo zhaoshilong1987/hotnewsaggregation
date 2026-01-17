@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "key": "zhihu",
+    "name": "知乎",
+    "apiUrl": "https://news.qualyouhulian.com/api/s?id=zhihu&latest",
+    "method": "GET",
+    "enabled": true,
+    "priority": 0
+  },
+  {
+    "id": 2,
+    "key": "weibo",
+    "name": "微博",
+    "apiUrl": "https://news.qualyouhulian.com/api/s?id=weibo&latest",
+    "method": "GET",
+    "enabled": true,
+    "priority": 1
+  },
+  {
+    "id": 3,
+    "key": "toutiao",
+    "name": "今日头条",
+    "apiUrl": "https://news.qualyouhulian.com/api/s?id=toutiao&latest",
+    "method": "GET",
+    "enabled": true,
+    "priority": 2
+  },
+  {
+    "id": 4,
+    "key": "baidu",
+    "name": "百度热搜",
+    "apiUrl": "https://news.qualyouhulian.com/api/s?id=baidu&latest",
+    "method": "GET",
+    "enabled": true,
+    "priority": 3
+  },
+  {
+    "id": 5,
+    "key": "thepaper",
+    "name": "澎湃新闻",
+    "apiUrl": "https://news.qualyouhulian.com/api/s?id=thepaper&latest",
+    "method": "GET",
+    "enabled": true,
+    "priority": 4
+  },
+  {
+    "id": 6,
+    "key": "cailianpress",
+    "name": "财联社",
+    "apiUrl": "https://news.qualyouhulian.com/api/s?id=cailianpress&latest",
+    "method": "GET",
+    "enabled": true,
+    "priority": 5
+  }
+]

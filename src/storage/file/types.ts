@@ -1,0 +1,262 @@
+// 配置文件类型定义
+
+export interface PlatformConfig {
+  id: number;
+  key: string;
+  name: string;
+  apiUrl: string;
+  method: string;
+  enabled: boolean;
+  priority: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface AppSettings {
+  platforms: PlatformConfig[];
+  platformTags: PlatformTagsConfig;
+  // 可以在这里添加其他配置项
+  // 例如：主题、语言等
+}
+
+export interface PlatformTagsConfig {
+  visible: string[];  // 显示的平台标签key列表
+  hidden: string[];   // 隐藏的平台标签key列表
+}
+
+export interface AppConfigFile {
+  version: string;
+  updatedAt: string;
+  settings: AppSettings;
+}
+
+// 默认平台配置
+export const DEFAULT_PLATFORMS: PlatformConfig[] = [
+  {
+    id: 1,
+    key: 'zhihu',
+    name: '知乎',
+    apiUrl: 'https://news.quanyouhulian.com/api/s?id=zhihu&latest',
+    method: 'GET',
+    enabled: true,
+    priority: 1,
+  },
+  {
+    id: 2,
+    key: 'weibo',
+    name: '微博',
+    apiUrl: 'https://news.quanyouhulian.com/api/s?id=weibo&latest',
+    method: 'GET',
+    enabled: true,
+    priority: 2,
+  },
+  {
+    id: 3,
+    key: 'coolapk',
+    name: '酷安',
+    apiUrl: 'https://news.quanyouhulian.com/api/s?id=coolapk&latest',
+    method: 'GET',
+    enabled: true,
+    priority: 3,
+  },
+  {
+    id: 4,
+    key: 'wallstreet',
+    name: '华尔街见闻',
+    apiUrl: 'https://news.quanyouhulian.com/api/s?id=wallstreetcn-hot&latest',
+    method: 'GET',
+    enabled: true,
+    priority: 4,
+  },
+  {
+    id: 5,
+    key: 'douyin',
+    name: '抖音',
+    apiUrl: 'https://www.douyin.com/aweme/v1/hot/search/list/?device_platform=webapp&aid=6383&channel=channel_pc_web&detail_list=1',
+    method: 'GET',
+    enabled: true,
+    priority: 5,
+  },
+  {
+    id: 6,
+    key: 'hupu',
+    name: '虎扑',
+    apiUrl: 'https://news.quanyouhulian.com/api/s?id=hupu&latest',
+    method: 'GET',
+    enabled: true,
+    priority: 6,
+  },
+  {
+    id: 7,
+    key: 'tieba',
+    name: '百度贴吧',
+    apiUrl: 'https://news.quanyouhulian.com/api/s?id=tieba&latest',
+    method: 'GET',
+    enabled: true,
+    priority: 7,
+  },
+  {
+    id: 8,
+    key: 'toutiao',
+    name: '今日头条',
+    apiUrl: 'https://news.quanyouhulian.com/api/s?id=toutiao&latest',
+    method: 'GET',
+    enabled: true,
+    priority: 8,
+  },
+  {
+    id: 9,
+    key: 'thepaper',
+    name: '澎湃新闻',
+    apiUrl: 'https://news.quanyouhulian.com/api/s?id=thepaper&latest',
+    method: 'GET',
+    enabled: true,
+    priority: 9,
+  },
+  {
+    id: 10,
+    key: 'cailianpress',
+    name: '财联社',
+    apiUrl: 'https://news.quanyouhulian.com/api/s?id=cls-hot&latest',
+    method: 'GET',
+    enabled: true,
+    priority: 10,
+  },
+  {
+    id: 11,
+    key: 'xueqiu',
+    name: '雪球',
+    apiUrl: 'https://news.quanyouhulian.com/api/s?id=xueqiu-hotstock&latest',
+    method: 'GET',
+    enabled: true,
+    priority: 11,
+  },
+  {
+    id: 12,
+    key: 'bilibili-hot',
+    name: 'B站热搜',
+    apiUrl: 'https://news.quanyouhulian.com/api/s?id=bilibili-hot-search&latest',
+    method: 'GET',
+    enabled: true,
+    priority: 12,
+  },
+  {
+    id: 13,
+    key: 'bilibili-popular',
+    name: 'B站热门视频',
+    apiUrl: 'https://news.quanyouhulian.com/api/s?id=bilibili-hot-video&latest',
+    method: 'GET',
+    enabled: true,
+    priority: 13,
+  },
+  {
+    id: 14,
+    key: 'bilibili-ranking',
+    name: 'B站排行榜',
+    apiUrl: 'https://news.quanyouhulian.com/api/s?id=bilibili-ranking&latest',
+    method: 'GET',
+    enabled: true,
+    priority: 14,
+  },
+  {
+    id: 15,
+    key: 'baidu',
+    name: '百度热搜',
+    apiUrl: 'https://news.quanyouhulian.com/api/s?id=baidu&latest',
+    method: 'GET',
+    enabled: true,
+    priority: 15,
+  },
+  {
+    id: 16,
+    key: 'nowcoder',
+    name: '牛客',
+    apiUrl: 'https://news.quanyouhulian.com/api/s?id=nowcoder&latest',
+    method: 'GET',
+    enabled: true,
+    priority: 16,
+  },
+  {
+    id: 17,
+    key: 'sspai',
+    name: '少数派',
+    apiUrl: 'https://news.quanyouhulian.com/api/s?id=sspai&latest',
+    method: 'GET',
+    enabled: true,
+    priority: 17,
+  },
+  {
+    id: 18,
+    key: 'juejin',
+    name: '稀土掘金',
+    apiUrl: 'https://news.quanyouhulian.com/api/s?id=juejin&latest',
+    method: 'GET',
+    enabled: true,
+    priority: 18,
+  },
+  {
+    id: 19,
+    key: 'ifeng',
+    name: '凤凰网',
+    apiUrl: 'https://news.quanyouhulian.com/api/s?id=ifeng&latest',
+    method: 'GET',
+    enabled: true,
+    priority: 19,
+  },
+  {
+    id: 20,
+    key: 'chongbuluo',
+    name: '虫部落',
+    apiUrl: 'https://news.quanyouhulian.com/api/s?id=chongbuluo-hot&latest',
+    method: 'GET',
+    enabled: true,
+    priority: 20,
+  },
+  {
+    id: 21,
+    key: 'douban',
+    name: '豆瓣',
+    apiUrl: 'https://news.quanyouhulian.com/api/s?id=douban&latest',
+    method: 'GET',
+    enabled: true,
+    priority: 21,
+  },
+  {
+    id: 22,
+    key: 'steam',
+    name: 'Steam',
+    apiUrl: 'https://news.quanyouhulian.com/api/s?id=steam&latest',
+    method: 'GET',
+    enabled: true,
+    priority: 22,
+  },
+];
+
+// 默认平台标签配置
+export const DEFAULT_PLATFORM_TAGS: PlatformTagsConfig = {
+  visible: [
+    'zhihu',
+    'weibo',
+    'wallstreet',
+    'coolapk',
+    'douyin',
+    'hupu',
+    'tieba',
+    'bilibili-hot',
+    'bilibili-popular',
+    'bilibili-ranking'
+  ],
+  hidden: DEFAULT_PLATFORMS.map(p => p.key).filter(key =>
+    !['zhihu', 'weibo', 'wallstreet', 'coolapk', 'douyin', 'hupu', 'tieba', 'bilibili-hot', 'bilibili-popular', 'bilibili-ranking'].includes(key)
+  ),
+};
+
+// 默认配置文件
+export const DEFAULT_APP_CONFIG: AppConfigFile = {
+  version: '1.0.0',
+  updatedAt: new Date().toISOString(),
+  settings: {
+    platforms: DEFAULT_PLATFORMS,
+    platformTags: DEFAULT_PLATFORM_TAGS,
+  },
+};

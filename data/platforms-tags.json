@@ -1,0 +1,28 @@
+{
+  "visible": [
+    "zhihu",
+    "weibo",
+    "toutiao",
+    "baidu",
+    "thepaper",
+    "cailianpress",
+    "hupu",
+    "xueqiu"
+  ],
+  "hidden": [
+    "coolapk",
+    "wallstreet",
+    "douyin",
+    "tieba",
+    "bilibili-hot",
+    "bilibili-popular",
+    "bilibili-ranking",
+    "nowcoder",
+    "sspai",
+    "juejin",
+    "ifeng",
+    "chongbuluo",
+    "douban",
+    "steam"
+  ]
+}
