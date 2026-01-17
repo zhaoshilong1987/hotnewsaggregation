@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   // 启用压缩以减少传输大小
   compress: true,
   images: {
-    unoptimized: false, // 启用图片优化
+    unoptimized: true, // Netlify 部署时禁用图片优化
     remotePatterns: [
       {
         protocol: 'https',
