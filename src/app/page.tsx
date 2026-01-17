@@ -20,7 +20,6 @@ export default function Home() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
   const [isPulling, setIsPulling] = useState(false);
-  const [hotNews, setHotNews] = useState<any[]>([]);
   const [latestNews, setLatestNews] = useState<any[]>([]);
   const [bookmarks, setBookmarks] = useState<any[]>([]);
   const [showPlatformEditor, setShowPlatformEditor] = useState(false);
