@@ -5,8 +5,9 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ['*.dev.coze.site'],
   // 启用压缩以减少传输大小
   compress: true,
+  // 禁用图片优化（适配 Netlify 部署）
   images: {
-    unoptimized: true, // Netlify 部署时禁用图片优化
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
