@@ -92,6 +92,6 @@
   "packageManager": "pnpm@9.0.0",
   "engines": {
     "pnpm": ">=9.0.0",
-    "node": ">=18.17.0"
+    "node": ">=20.9.0"
   }
 }
