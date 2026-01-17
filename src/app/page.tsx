@@ -27,7 +27,9 @@ export default function Home() {
   const [visiblePlatforms, setVisiblePlatforms] = useState<string[]>([]);
   const [hiddenPlatforms, setHiddenPlatforms] = useState<string[]>([]);
   const [platformsLoaded, setPlatformsLoaded] = useState(false);
-  const [useRealApi, setUseRealApi] = useState(true);
+  const [useRealApi, setUseRealApi] = useState(false);
+  // 立即初始化 mock 数据，确保页面不显示"暂无数据"
+  const [hotNews, setHotNews] = useState<any[]>(getMockNews('all')); // 强制使用 mock 数据
   const [loadingError, setLoadingError] = useState<string | null>(null);
   const [displayCount, setDisplayCount] = useState(30); // 初始显示30条
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -37,12 +39,13 @@ export default function Home() {
 
   // 初始化平台配置
   useEffect(() => {
+    console.log('初始化平台配置...');
     const loadPlatformConfig = async () => {
       try {
         // 从配置文件读取平台标签配置
-        // 添加超时控制 - 5 秒超时
+        // 添加超时控制 - 延长到 15 秒超时，增加容错
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
 
         try {
           const tagsResponse = await fetch('/api/tags', {
@@ -57,53 +60,47 @@ export default function Home() {
               setHiddenPlatforms(tagsResult.data.hidden || []);
             } else {
               console.error('加载平台标签配置失败:', tagsResult.error);
-              // 使用默认配置
-              const defaultVisible = PLATFORMS.slice(0, 8).map(p => p.key);
-              const defaultHidden = PLATFORMS.slice(8).map(p => p.key);
-              setVisiblePlatforms(defaultVisible);
-              setHiddenPlatforms(defaultHidden);
+              // 使用默认配置 - 使用所有平台而不是只使用前8个
+              const allPlatformKeys = PLATFORMS.map(p => p.key);
+              setVisiblePlatforms(allPlatformKeys);
+              setHiddenPlatforms([]);
             }
           } else {
             console.error('加载平台标签配置失败: HTTP', tagsResponse.status);
-            // 使用默认配置
-            const defaultVisible = PLATFORMS.slice(0, 8).map(p => p.key);
-            const defaultHidden = PLATFORMS.slice(8).map(p => p.key);
-            setVisiblePlatforms(defaultVisible);
-            setHiddenPlatforms(defaultHidden);
+            // 使用默认配置 - 使用所有平台而不是只使用前8个
+            const allPlatformKeys = PLATFORMS.map(p => p.key);
+            setVisiblePlatforms(allPlatformKeys);
+            setHiddenPlatforms([]);
           }
         } catch (fetchError: any) {
           clearTimeout(timeoutId);
 
           // 如果是超时错误，使用默认配置
           if (fetchError.name === 'AbortError' || fetchError.message.includes('timeout')) {
-            console.warn('平台配置 API 请求超时，使用默认配置');
+            console.warn('平台配置 API 请求超时，使用默认配置（包含所有平台）');
           }
 
-          // 使用默认配置
-          const defaultVisible = PLATFORMS.slice(0, 8).map(p => p.key);
-          const defaultHidden = PLATFORMS.slice(8).map(p => p.key);
-          setVisiblePlatforms(defaultVisible);
-          setHiddenPlatforms(defaultHidden);
+          // 使用默认配置 - 使用所有平台而不是只使用前8个
+          const allPlatformKeys = PLATFORMS.map(p => p.key);
+          setVisiblePlatforms(allPlatformKeys);
+          setHiddenPlatforms([]);
         }
 
         // 读取 useRealApi 设置（从 localStorage 保持兼容）
         const savedUseRealApi = localStorage.getItem('useRealApi');
         if (savedUseRealApi !== null) {
           setUseRealApi(JSON.parse(savedUseRealApi));
-        } else {
-          // 默认使用 mock 数据，避免首次加载超时
-          // 用户可以在设置中切换到真实 API
-          setUseRealApi(false);
         }
 
+        // 确保无论如何都设置 platformsLoaded 为 true
         setPlatformsLoaded(true);
       } catch (e) {
         console.error('Failed to load platform configuration:', e);
-        // 使用默认配置
-        const defaultVisible = PLATFORMS.slice(0, 8).map(p => p.key);
-        const defaultHidden = PLATFORMS.slice(8).map(p => p.key);
-        setVisiblePlatforms(defaultVisible);
-        setHiddenPlatforms(defaultHidden);
+        // 使用默认配置 - 使用所有平台而不是只使用前8个
+        const allPlatformKeys = PLATFORMS.map(p => p.key);
+        setVisiblePlatforms(allPlatformKeys);
+        setHiddenPlatforms([]);
+        // 确保无论如何都设置 platformsLoaded 为 true
         setPlatformsLoaded(true);
       }
     };
@@ -168,10 +165,10 @@ export default function Home() {
 
   // 加载热榜数据
   useEffect(() => {
-    if (activeTab === 'hot' && platformsLoaded) {
+    if (activeTab === 'hot') {
       fetchHotNews();
     }
-  }, [activeTab, selectedPlatform, platformsLoaded]);
+  }, [activeTab, selectedPlatform]);
 
   // 加载最新资讯
   useEffect(() => {
@@ -181,12 +178,19 @@ export default function Home() {
   }, [activeTab, selectedPlatform, platformsLoaded]);
 
   const fetchHotNews = async () => {
+    console.log('fetchHotNews called:', {
+      activeTab,
+      selectedPlatform,
+      platformsLoaded,
+      useRealApi
+    });
     try {
       setLoadingError(null);
 
       if (!useRealApi) {
         // 使用 mock 数据
         const newsData = getMockNews(selectedPlatform);
+        console.log('Mock data loaded:', newsData.length);
         setHotNews(newsData);
         return;
       }
@@ -406,7 +410,17 @@ export default function Home() {
   };
 
   const getVisiblePlatformList = () => {
-    return visiblePlatforms.map(key => PLATFORMS.find(p => p.key === key)).filter(Boolean);
+    // 如果 visiblePlatforms 为空，返回所有平台作为默认值
+    const platformsToUse = visiblePlatforms.length > 0
+      ? visiblePlatforms
+      : PLATFORMS.map(p => p.key);
+    const result = platformsToUse.map(key => PLATFORMS.find(p => p.key === key)).filter(Boolean);
+    console.log('getVisiblePlatformList:', {
+      visiblePlatforms,
+      platformsToUse,
+      resultCount: result.length
+    });
+    return result;
   };
 
   return (

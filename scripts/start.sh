@@ -8,8 +8,8 @@ DEPLOY_RUN_PORT="${DEPLOY_RUN_PORT:-$PORT}"
 start_service() {
     cd "${COZE_WORKSPACE_PATH}"
     echo "Starting HTTP service..."
-    # Vercel 会通过 PORT 环境变量指定端口，不需要手动指定
-    npx next start
+    # 使用指定的端口
+    npx next start -p ${DEPLOY_RUN_PORT}
 }
 
 echo "Starting HTTP service on port ${DEPLOY_RUN_PORT} for deploy..."
