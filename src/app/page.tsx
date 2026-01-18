@@ -26,7 +26,7 @@ export default function Home() {
   const [visiblePlatforms, setVisiblePlatforms] = useState<string[]>([]);
   const [hiddenPlatforms, setHiddenPlatforms] = useState<string[]>([]);
   const [platformsLoaded, setPlatformsLoaded] = useState(false);
-  const [useRealApi, setUseRealApi] = useState(false);
+  const [useRealApi, setUseRealApi] = useState(true);
   // 立即初始化 mock 数据，确保页面不显示"暂无数据"
   const [hotNews, setHotNews] = useState<any[]>(getMockNews('all')); // 强制使用 mock 数据
   const [loadingError, setLoadingError] = useState<string | null>(null);
