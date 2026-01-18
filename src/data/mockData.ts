@@ -50,6 +50,27 @@ const mockNewsData: NewsItem[] = [
     url: 'https://www.zhihu.com',
   },
 
+  // 华尔街见闻
+  {
+    id: generateId(),
+    title: '全球金融市场迎来新变革，央行政策调整影响深远',
+    source: 'wallstreet' as Platform,
+    sourceName: '华尔街见闻',
+    hotScore: 7890123,
+    publishTime: getRandomTimeOffset(),
+    url: 'https://wallstreetcn.com',
+    description: '随着全球央行政策调整，金融市场将迎来新的投资机会...'
+  },
+  {
+    id: generateId(),
+    title: '美联储最新会议纪要释放重要信号',
+    source: 'wallstreet' as Platform,
+    sourceName: '华尔街见闻',
+    hotScore: 6543210,
+    publishTime: getRandomTimeOffset(),
+    url: 'https://wallstreetcn.com',
+  },
+
   // 微博
   {
     id: generateId(),
@@ -331,6 +352,190 @@ const mockNewsData: NewsItem[] = [
     hotScore: 4321098,
     publishTime: getRandomTimeOffset(),
     url: 'https://www.douban.com',
+  },
+
+  // 酷安
+  {
+    id: generateId(),
+    title: '2025年最值得期待的安卓新机汇总',
+    source: 'coolapk' as Platform,
+    sourceName: '酷安',
+    hotScore: 3456789,
+    publishTime: getRandomTimeOffset(),
+    url: 'https://coolapk.com',
+    description: '多家手机厂商即将发布新款机型，这些新功能值得关注...'
+  },
+  {
+    id: generateId(),
+    title: '实用APP推荐：提升效率的神器',
+    source: 'coolapk' as Platform,
+    sourceName: '酷安',
+    hotScore: 2876543,
+    publishTime: getRandomTimeOffset(),
+    url: 'https://coolapk.com',
+  },
+
+  // 抖音
+  {
+    id: generateId(),
+    title: '最新热门短视频话题榜',
+    source: 'douyin' as Platform,
+    sourceName: '抖音',
+    hotScore: 9876543,
+    publishTime: getRandomTimeOffset(),
+    url: 'https://www.douyin.com',
+  },
+  {
+    id: generateId(),
+    title: '短视频创作新趋势分析',
+    source: 'douyin' as Platform,
+    sourceName: '抖音',
+    hotScore: 8765432,
+    publishTime: getRandomTimeOffset(),
+    url: 'https://www.douyin.com',
+  },
+
+  // 百度贴吧
+  {
+    id: generateId(),
+    title: '热议话题：2025年科技发展趋势讨论',
+    source: 'tieba' as Platform,
+    sourceName: '百度贴吧',
+    hotScore: 5432109,
+    publishTime: getRandomTimeOffset(),
+    url: 'https://tieba.baidu.com',
+  },
+  {
+    id: generateId(),
+    title: '游戏圈热门话题汇总',
+    source: 'tieba' as Platform,
+    sourceName: '百度贴吧',
+    hotScore: 4321098,
+    publishTime: getRandomTimeOffset(),
+    url: 'https://tieba.baidu.com',
+  },
+
+  // B站热门视频
+  {
+    id: generateId(),
+    title: '年度最火视频创作者盘点',
+    source: 'bilibili-popular' as Platform,
+    sourceName: 'B站热门视频',
+    hotScore: 8765432,
+    publishTime: getRandomTimeOffset(),
+    url: 'https://www.bilibili.com',
+  },
+  {
+    id: generateId(),
+    title: '热门视频类型分析报告',
+    source: 'bilibili-popular' as Platform,
+    sourceName: 'B站热门视频',
+    hotScore: 7654321,
+    publishTime: getRandomTimeOffset(),
+    url: 'https://www.bilibili.com',
+  },
+
+  // B站排行榜
+  {
+    id: generateId(),
+    title: '本周B站排行榜TOP10',
+    source: 'bilibili-ranking' as Platform,
+    sourceName: 'B站排行榜',
+    hotScore: 6543210,
+    publishTime: getRandomTimeOffset(),
+    url: 'https://www.bilibili.com',
+  },
+  {
+    id: generateId(),
+    title: '游戏区热门作品推荐',
+    source: 'bilibili-ranking' as Platform,
+    sourceName: 'B站排行榜',
+    hotScore: 5432098,
+    publishTime: getRandomTimeOffset(),
+    url: 'https://www.bilibili.com',
+  },
+
+  // 牛客
+  {
+    id: generateId(),
+    title: '2025年春招最新动态汇总',
+    source: 'nowcoder' as Platform,
+    sourceName: '牛客',
+    hotScore: 4567890,
+    publishTime: getRandomTimeOffset(),
+    url: 'https://www.nowcoder.com',
+    description: '各大互联网公司春招陆续开启，这些岗位最受欢迎...'
+  },
+  {
+    id: generateId(),
+    title: '程序员面试必刷题推荐',
+    source: 'nowcoder' as Platform,
+    sourceName: '牛客',
+    hotScore: 3456789,
+    publishTime: getRandomTimeOffset(),
+    url: 'https://www.nowcoder.com',
+  },
+
+  // 凤凰网
+  {
+    id: generateId(),
+    title: '国际局势最新动态分析',
+    source: 'ifeng' as Platform,
+    sourceName: '凤凰网',
+    hotScore: 5678901,
+    publishTime: getRandomTimeOffset(),
+    url: 'https://www.ifeng.com',
+  },
+  {
+    id: generateId(),
+    title: '国内经济政策调整解读',
+    source: 'ifeng' as Platform,
+    sourceName: '凤凰网',
+    hotScore: 4567890,
+    publishTime: getRandomTimeOffset(),
+    url: 'https://www.ifeng.com',
+  },
+
+  // 虫部落
+  {
+    id: generateId(),
+    title: '2025年最新搜索技巧分享',
+    source: 'chongbuluo' as Platform,
+    sourceName: '虫部落',
+    hotScore: 2345678,
+    publishTime: getRandomTimeOffset(),
+    url: 'https://www.chongbuluo.com',
+    description: '高效的搜索技巧能让你更快找到所需信息...'
+  },
+  {
+    id: generateId(),
+    title: '实用工具推荐合集',
+    source: 'chongbuluo' as Platform,
+    sourceName: '虫部落',
+    hotScore: 1987654,
+    publishTime: getRandomTimeOffset(),
+    url: 'https://www.chongbuluo.com',
+  },
+
+  // Steam
+  {
+    id: generateId(),
+    title: 'Steam冬促热门游戏推荐',
+    source: 'steam' as Platform,
+    sourceName: 'Steam',
+    hotScore: 8765432,
+    publishTime: getRandomTimeOffset(),
+    url: 'https://store.steampowered.com',
+    description: '这些折扣游戏性价比超高，不容错过...'
+  },
+  {
+    id: generateId(),
+    title: '独立游戏佳作盘点',
+    source: 'steam' as Platform,
+    sourceName: 'Steam',
+    hotScore: 7654321,
+    publishTime: getRandomTimeOffset(),
+    url: 'https://store.steampowered.com',
   },
 ];
 

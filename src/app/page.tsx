@@ -197,9 +197,9 @@ export default function Home() {
       // 使用真实 API
       const platform = selectedPlatform === 'all' ? 'all' : selectedPlatform;
 
-      // 创建超时控制器 - 前端 10 秒超时
+      // 创建超时控制器 - 前端 15 秒超时
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
 
       try {
         const response = await fetch(`/api/news/${platform}`, {
@@ -257,6 +257,14 @@ export default function Home() {
       return acc;
     }, {});
 
+    console.log('getNewsByPlatform - grouped data:', {
+      visiblePlatforms,
+      groupedKeys: Object.keys(grouped),
+      groupedCounts: Object.fromEntries(
+        Object.entries(grouped).map(([key, items]) => [key, items.length])
+      ),
+    });
+
     // 按平台标签顺序排序
     const sortedPlatforms = visiblePlatforms
       .filter(key => grouped[key] && grouped[key].length > 0)
@@ -265,6 +273,11 @@ export default function Home() {
         news: grouped[key],
       }))
       .filter(item => item.platform !== undefined);
+
+    console.log('getNewsByPlatform - sorted platforms:', {
+      totalCount: sortedPlatforms.length,
+      platforms: sortedPlatforms.map(p => ({ name: p.platform?.name, newsCount: p.news.length })),
+    });
 
     return sortedPlatforms;
   };
@@ -276,9 +289,9 @@ export default function Home() {
       if (useRealApi) {
         const platform = selectedPlatform === 'all' ? 'all' : selectedPlatform;
 
-        // 创建超时控制器 - 前端 10 秒超时
+        // 创建超时控制器 - 前端 15 秒超时
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
 
         try {
           const response = await fetch(`/api/news/${platform}`, {

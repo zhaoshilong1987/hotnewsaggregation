@@ -9,6 +9,16 @@ interface TagsConfig {
   hidden: string[];
 }
 
+interface PlatformConfig {
+  id: number;
+  key: string;
+  name: string;
+  apiUrl: string;
+  method: 'GET' | 'POST';
+  enabled: boolean;
+  priority: number;
+}
+
 // 缓存配置文件，避免重复读取
 let configCache: any = null;
 let configCacheTime = 0;
@@ -47,7 +57,25 @@ async function writeConfigFile(config: any): Promise<void> {
 export async function GET() {
   try {
     const config = await readConfigFile();
-    const tagsConfig: TagsConfig = config.settings?.platformTags || { visible: [], hidden: [] };
+
+    // 如果 platformTags 不存在或为空，使用所有启用的平台作为 visible
+    let tagsConfig: TagsConfig = config.settings?.platformTags || { visible: [], hidden: [] };
+
+    if (tagsConfig.visible.length === 0) {
+      // 如果 visible 为空，使用所有启用的平台
+      const enabledPlatforms = config.settings?.platforms
+        ?.filter((p: PlatformConfig) => p.enabled)
+        ?.map((p: PlatformConfig) => p.key) || [];
+
+      tagsConfig = {
+        visible: enabledPlatforms,
+        hidden: [],
+      };
+
+      console.log('platformTags is empty, using all enabled platforms:', enabledPlatforms);
+    }
+
+    console.log('Returning platform tags config:', tagsConfig);
 
     return NextResponse.json({
       success: true,

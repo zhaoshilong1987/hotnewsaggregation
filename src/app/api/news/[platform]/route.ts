@@ -114,10 +114,27 @@ async function fetchFromExternalApi(platformKey: string): Promise<NewsItem[]> {
     // 兼容不同的外部 API 数据格式
     // 格式1: { success: true, data: [...] }
     // 格式2: { status: "success", items: [...] }
-    const newsItems = data.data || data.items || [];
+    // 格式3: { data: { trending_list: [...] } } (douyin)
+    // 格式4: { data: { items: [...] } }
+    const rawData = data.data?.trending_list || data.data?.items || data.items || data.data || [];
 
-    if (Array.isArray(newsItems)) {
-      return newsItems.map((item: any) => ({
+    // 特殊处理 douyin 平台的数据格式
+    if (platformKey === 'douyin' && Array.isArray(rawData)) {
+      return rawData.map((item: any) => ({
+        id: item.group_id || String(Date.now() + Math.random()),
+        title: item.word || '无标题',
+        source: platformKey,
+        sourceName: platformConfig.name,
+        hotScore: item.hot_value || 0,
+        publishTime: '刚刚',
+        thumbnail: item.word_cover?.url_list?.[0] || undefined,
+        url: `https://www.douyin.com/search/${encodeURIComponent(item.word)}`,
+        description: undefined,
+      }));
+    }
+
+    if (Array.isArray(rawData)) {
+      return rawData.map((item: any) => ({
         id: item.id || String(Date.now() + Math.random()),
         title: item.title || '无标题',
         source: platformKey,
@@ -173,13 +190,22 @@ export async function GET(
 
   try {
     if (platform === 'all') {
-      const allPlatforms = [
-        'zhihu', 'weibo', 'toutiao', 'baidu', 'thepaper', 'cailianpress',
-        'hupu', 'xueqiu', 'bilibili-hot', 'douban', 'juejin', 'sspai'
-      ];
+      // 从配置文件读取启用的平台列表
+      const config = await readConfigFile();
+      const allPlatformsConfig: PlatformConfig[] = config.settings?.platforms || [];
+
+      // 过滤出启用的平台
+      const allPlatforms = allPlatformsConfig
+        .filter(p => p.enabled)
+        .map(p => p.key);
+
+      console.log('Fetching news for all platforms:', allPlatforms);
+      console.log('Total enabled platforms:', allPlatforms.length);
 
       const allNews: NewsItem[] = [];
       const batchSize = 4; // 增加批量大小，提升并行度
+
+      const platformResults: Record<string, { success: boolean; count: number; error?: string }> = {};
 
       for (let i = 0; i < allPlatforms.length; i += batchSize) {
         const batch = allPlatforms.slice(i, i + batchSize);
@@ -196,9 +222,16 @@ export async function GET(
         try {
           const batchResults = await Promise.race([batchPromise, timeoutPromise]) as PromiseSettledResult<NewsItem[]>[];
 
-          batchResults.forEach((result) => {
+          batchResults.forEach((result, index) => {
+            const platformKey = batch[index];
             if (result.status === 'fulfilled' && Array.isArray(result.value)) {
               allNews.push(...result.value);
+              platformResults[platformKey] = { success: true, count: result.value.length };
+              console.log(`Platform ${platformKey}: loaded ${result.value.length} items`);
+            } else {
+              const error = result.status === 'rejected' ? result.reason : 'Invalid data';
+              console.error(`Platform ${platformKey}: ${error}`);
+              platformResults[platformKey] = { success: false, count: 0, error: String(error) };
             }
           });
         } catch (error) {
@@ -208,6 +241,13 @@ export async function GET(
       }
 
       allNews.sort((a, b) => b.hotScore - a.hotScore);
+
+      console.log('All platforms fetch complete:', {
+        totalItems: allNews.length,
+        platformResults,
+        successfulPlatforms: Object.values(platformResults).filter(r => r.success).length,
+        failedPlatforms: Object.values(platformResults).filter(r => !r.success).length,
+      });
 
       // 如果没有获取到任何数据，返回 Mock 数据
       if (allNews.length === 0) {
