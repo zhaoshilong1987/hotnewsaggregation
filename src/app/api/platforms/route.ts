@@ -85,7 +85,7 @@ export async function POST(request: Request) {
     }
 
     const config = await readConfigFile();
-    let platforms: PlatformConfig[] = config.settings?.platforms || [];
+    const platforms: PlatformConfig[] = config.settings?.platforms || [];
 
     if (id && id > 0) {
       // 更新现有平台
