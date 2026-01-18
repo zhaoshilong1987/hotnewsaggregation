@@ -11,6 +11,7 @@
     "start": "bash ./scripts/start.sh",
     "ts-check": "tsc -p tsconfig.json",
     "pages:build": "npx @cloudflare/next-on-pages",
+    "pages:build:npm": "npx next build && npx @cloudflare/next-on-pages",
     "pages:dev": "npx wrangler pages dev .vercel/output/static",
     "pages:deploy": "npx wrangler pages deploy .vercel/output/static"
   },

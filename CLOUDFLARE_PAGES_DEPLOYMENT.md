@@ -20,9 +20,11 @@
 | 配置项 | 值 |
 |--------|-----|
 | **框架预设** | Next.js |
-| **构建命令** | `pnpm run pages:build` |
+| **构建命令** | `npm run pages:build:npm` 或 `pnpm run pages:build` |
 | **构建输出目录** | `.vercel/output/static` |
 | **Node.js 版本** | `20` |
+
+**注意**：推荐使用 `npm run pages:build:npm` 以避免 Cloudflare Pages 环境中 pnpm 安装问题。
 
 #### 步骤 3：环境变量（可选）
 
@@ -118,14 +120,30 @@ pnpm run pages:dev
 
 ## 🛠️ 常见问题
 
-### 1. 构建失败
+### 1. pnpm 不可执行错误
+
+**错误信息**：
+```
+Unable to locate executable file: pnpm. Please verify either the file path exists or the file can be found within a directory specified by the PATH environment variable.
+```
+
+**解决方案**：
+
+在 Cloudflare Pages 控制台配置中，使用以下构建命令：
+```bash
+npm run pages:build:npm
+```
+
+这个命令会跳过 pnpm 的 preinstall 检查，直接使用 npm 进行构建。
+
+### 2. 构建失败
 
 检查：
 - Node.js 版本是否为 20.x
 - 依赖是否正确安装
 - 构建输出目录是否为 `.vercel/output/static`
 
-### 2. API 路由不可用
+### 3. API 路由不可用
 
 Cloudflare Pages 使用 Edge Runtime，确保 API 路由使用 `export const runtime = 'edge'`。
 
