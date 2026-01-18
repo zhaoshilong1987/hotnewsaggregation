@@ -1,6 +1,6 @@
 {
-  "name": "热榜资讯APP",
-  "short_name": "热榜APP",
+  "name": "全网热点",
+  "short_name": "热点",
   "description": "聚合全网热点资讯，实时同步各大平台热门话题、新闻排行榜",
   "start_url": "/",
   "display": "standalone",

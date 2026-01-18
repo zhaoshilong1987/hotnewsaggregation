@@ -10,15 +10,15 @@ const geistSans = Geist({
 
 export const metadata: Metadata = {
   title: {
-    default: '热榜资讯APP',
-    template: '%s | 热榜资讯APP',
+    default: '全网热点',
+    template: '%s | 全网热点',
   },
   description:
     '聚合全网热点资讯，实时同步各大平台热门话题、新闻排行榜。一站式获取知乎、微博、今日头条、百度热搜等平台的热点内容。',
   keywords: [
-    '热榜',
-    '资讯',
     '热点',
+    '资讯',
+    '热榜',
     '新闻',
     '知乎',
     '微博',
@@ -27,10 +27,10 @@ export const metadata: Metadata = {
     '澎湃新闻',
     '财联社',
   ],
-  authors: [{ name: '热榜资讯APP Team' }],
-  generator: '热榜资讯APP',
+  authors: [{ name: '全网热点 Team' }],
+  generator: '全网热点',
   openGraph: {
-    title: '热榜资讯APP - 全网热点聚合平台',
+    title: '全网热点 - 全网热点聚合平台',
     description: '实时同步各大平台热门话题，一站式获取全网热点资讯',
     locale: 'zh_CN',
     type: 'website',
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: '热榜资讯APP',
+    title: '全网热点',
   },
   manifest: '/manifest.json',
   other: {

@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.rebang.news',
-  appName: '热榜资讯',
+  appId: 'com.quanyou.rebang',
+  appName: '全网热点',
 
   // 本地构建输出目录（Capacitor 在本地测试时使用）
   webDir: 'out',

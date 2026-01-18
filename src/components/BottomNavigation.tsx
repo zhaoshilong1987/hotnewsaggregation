@@ -9,7 +9,7 @@ export default function BottomNavigation() {
 
   const navItems = [
     {
-      name: '热榜',
+      name: '热点',
       href: '/',
       icon: Flame,
     },
