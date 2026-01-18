@@ -1,19 +1,8 @@
 import { NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
 import { getMockNews } from '@/data/mockData';
+import { PLATFORMS_CONFIG, PlatformConfig } from '@/lib/config';
 
-const CONFIG_FILE_PATH = path.join(process.cwd(), 'config', 'app-config.json');
-
-interface PlatformConfig {
-  id: number;
-  key: string;
-  name: string;
-  apiUrl: string;
-  method: 'GET' | 'POST';
-  enabled: boolean;
-  priority: number;
-}
+export const runtime = 'edge';
 
 interface NewsItem {
   id: string;
@@ -28,40 +17,10 @@ interface NewsItem {
   description?: string;
 }
 
-// 缓存配置文件，避免重复读取
-let configCache: any = null;
-let configCacheTime = 0;
-const CONFIG_CACHE_TTL = 60000; // 60秒缓存
-
-// 读取配置文件
-async function readConfigFile(): Promise<any> {
-  const now = Date.now();
-  // 使用缓存减少文件读取
-  if (configCache && (now - configCacheTime) < CONFIG_CACHE_TTL) {
-    return configCache;
-  }
-
-  try {
-    const content = await fs.readFile(CONFIG_FILE_PATH, 'utf-8');
-    configCache = JSON.parse(content);
-    configCacheTime = now;
-    return configCache;
-  } catch (error) {
-    console.error('Failed to read config file:', error);
-    throw error;
-  }
-}
-
 // 根据 platform key 获取平台配置
-async function getPlatformConfig(platformKey: string): Promise<PlatformConfig | null> {
-  try {
-    const config = await readConfigFile();
-    const platforms: PlatformConfig[] = config.settings?.platforms || [];
-    return platforms.find(p => p.key === platformKey) || null;
-  } catch (error) {
-    console.error(`Failed to get platform config for ${platformKey}:`, error);
-    return null;
-  }
+function getPlatformConfig(platformKey: string): PlatformConfig | null {
+  const platforms = PLATFORMS_CONFIG.settings.platforms;
+  return platforms.find(p => p.key === platformKey) || null;
 }
 
 // 带超时的 fetch
@@ -87,7 +46,7 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeout = 500
 
 async function fetchFromExternalApi(platformKey: string): Promise<NewsItem[]> {
   try {
-    const platformConfig = await getPlatformConfig(platformKey);
+    const platformConfig = getPlatformConfig(platformKey);
 
     if (!platformConfig) {
       throw new Error(`Platform ${platformKey} not found in config`);
@@ -158,19 +117,19 @@ async function fetchFromExternalApi(platformKey: string): Promise<NewsItem[]> {
 // 从热度文本中提取数字（如 "1389 万热度" -> 13890000）
 function extractHotScore(info?: string): number {
   if (!info) return 0;
-  
+
   const match = info.match(/(\d+\.?\d*)\s*(万|亿)?/);
   if (!match) return 0;
-  
+
   const number = parseFloat(match[1]);
   const unit = match[2];
-  
+
   if (unit === '万') {
     return Math.floor(number * 10000);
   } else if (unit === '亿') {
     return Math.floor(number * 100000000);
   }
-  
+
   return Math.floor(number);
 }
 
@@ -178,7 +137,6 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ platform: string }> }
 ) {
-  // 将 platform 定义移到 try 块外，确保 catch 块可以访问
   const { platform } = await params;
 
   if (!platform) {
@@ -191,111 +149,60 @@ export async function GET(
   try {
     if (platform === 'all') {
       // 从配置文件读取启用的平台列表
-      const config = await readConfigFile();
-      const allPlatformsConfig: PlatformConfig[] = config.settings?.platforms || [];
+      const allPlatformsConfig = PLATFORMS_CONFIG.settings.platforms;
 
       // 过滤出启用的平台
       const allPlatforms = allPlatformsConfig
         .filter(p => p.enabled)
         .map(p => p.key);
 
-      console.log('Fetching news for all platforms:', allPlatforms);
-      console.log('Total enabled platforms:', allPlatforms.length);
+      console.log('Fetching all platforms:', allPlatforms);
 
+      // 并行获取所有平台的数据
+      const results = await Promise.allSettled(
+        allPlatforms.map(p => fetchFromExternalApi(p))
+      );
+
+      // 收集所有成功的请求
       const allNews: NewsItem[] = [];
-      const batchSize = 4; // 增加批量大小，提升并行度
-
-      const platformResults: Record<string, { success: boolean; count: number; error?: string }> = {};
-
-      for (let i = 0; i < allPlatforms.length; i += batchSize) {
-        const batch = allPlatforms.slice(i, i + batchSize);
-
-        // 使用带超时的 Promise.allSettled - 8 秒超时
-        const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Batch timeout')), 8000)
-        );
-
-        const batchPromise = Promise.allSettled(
-          batch.map(p => fetchFromExternalApi(p))
-        );
-
-        try {
-          const batchResults = await Promise.race([batchPromise, timeoutPromise]) as PromiseSettledResult<NewsItem[]>[];
-
-          batchResults.forEach((result, index) => {
-            const platformKey = batch[index];
-            if (result.status === 'fulfilled' && Array.isArray(result.value)) {
-              allNews.push(...result.value);
-              platformResults[platformKey] = { success: true, count: result.value.length };
-              console.log(`Platform ${platformKey}: loaded ${result.value.length} items`);
-            } else {
-              const error = result.status === 'rejected' ? result.reason : 'Invalid data';
-              console.error(`Platform ${platformKey}: ${error}`);
-              platformResults[platformKey] = { success: false, count: 0, error: String(error) };
-            }
-          });
-        } catch (error) {
-          // 批次超时或失败，继续处理下一批
-          console.warn(`Batch ${i}-${i + batchSize} failed or timeout:`, error);
+      results.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
+          allNews.push(...result.value);
+        } else {
+          console.error(`Failed to fetch platform ${allPlatforms[index]}:`, result.reason);
+          // 如果某个平台失败，使用 mock 数据
+          const mockData = getMockNews(allPlatforms[index]);
+          allNews.push(...mockData);
         }
-      }
-
-      allNews.sort((a, b) => b.hotScore - a.hotScore);
-
-      console.log('All platforms fetch complete:', {
-        totalItems: allNews.length,
-        platformResults,
-        successfulPlatforms: Object.values(platformResults).filter(r => r.success).length,
-        failedPlatforms: Object.values(platformResults).filter(r => !r.success).length,
       });
 
-      // 如果没有获取到任何数据，返回 Mock 数据
-      if (allNews.length === 0) {
-        console.warn('No data from external APIs, using mock data for /api/news/all');
-        const mockData = getMockNews('all');
-        return NextResponse.json({
-          success: true,
-          data: mockData,
-          message: 'Using mock data - no external data available',
-        }, {
-          headers: {
-            'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300'
-          }
-        });
-      }
+      // 按热度排序
+      allNews.sort((a, b) => b.hotScore - a.hotScore);
 
       return NextResponse.json({
         success: true,
         data: allNews,
-      }, {
-        headers: {
-          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300'
-        }
+      });
+    } else {
+      // 获取单个平台的数据
+      const news = await fetchFromExternalApi(platform);
+
+      return NextResponse.json({
+        success: true,
+        data: news,
       });
     }
-
-    const news = await fetchFromExternalApi(platform);
-
-    return NextResponse.json({
-      success: true,
-      data: news,
-    }, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300'
-      }
-    });
   } catch (error) {
-    console.error('Failed to fetch news, using mock data:', error);
-    // 超时或失败时返回 Mock 数据，确保页面始终有内容显示
+    console.error('Error fetching news:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+    // 降级到 mock 数据
     const mockData = getMockNews(platform);
+
     return NextResponse.json({
       success: true,
       data: mockData,
-      message: 'Using mock data due to API timeout or error',
-    }, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300'
-      }
+      message: `Using mock data due to error: ${errorMessage}`,
     });
   }
 }
