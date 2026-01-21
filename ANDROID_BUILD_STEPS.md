@@ -1,5 +1,13 @@
 # Android 打包完整步骤
 
+> ⚠️ **重要提示**：
+> - **沙盒环境限制**：本项目的沙盒环境（Coze Coding）未安装 Java JDK 和 Android SDK，无法直接执行 Android 打包操作。
+> - **签名密钥生成**：`keytool` 命令需要在**本地开发环境**中运行，沙盒环境不支持。
+> - **推荐流程**：使用沙盒环境开发 Web 功能，在本地环境进行 Android 打包。
+> - **Android 构建**：完整的 APK/AAB 打包应在本地机器或 CI/CD 环境中完成。
+
+---
+
 ## 一、环境准备
 
 ### 1. 安装必需工具
@@ -49,7 +57,30 @@ sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 sdkmanager --list_installed
 ```
 
-### 2. 验证环境
+### 2. 沙盒环境限制说明
+
+由于沙盒环境的限制，以下操作**必须在本地环境**完成：
+
+| 操作 | 沙盒环境 | 本地环境 |
+|-----|---------|---------|
+| Web 开发和预览 | ✅ 支持 | ✅ 支持 |
+| 生成签名密钥（keytool） | ❌ 不支持 | ✅ 支持 |
+| 构建 Android APK | ❌ 不支持 | ✅ 支持 |
+| 构建 App Bundle | ❌ 不支持 | ✅ 支持 |
+| 运行 Android 模拟器 | ❌ 不支持 | ✅ 支持 |
+
+**沙盒环境支持的功能**：
+- Next.js 开发和构建
+- 静态文件导出（用于 Android 打包）
+- Capacitor 配置同步
+- Web 预览和测试
+
+**需要本地环境完成的操作**：
+- 生成签名密钥
+- 构建 APK/AAB
+- 在真机或模拟器上测试
+
+### 3. 验证环境
 
 ```bash
 # 检查 Java 版本
@@ -66,7 +97,9 @@ adb version
 
 ---
 
-## 二、生成签名密钥
+## 二、生成签名密钥（本地环境）
+
+> ⚠️ **重要**：以下步骤必须在**本地开发环境**完成，沙盒环境不支持 `keytool` 命令。
 
 ### 1. 创建密钥库文件（仅需一次）
 
@@ -500,6 +533,37 @@ defaultConfig {
 ---
 
 ## 十、常见问题排查
+
+### 0. 沙盒环境中 keytool: command not found
+
+**错误信息**：
+```
+keytool: command not found
+```
+
+**原因**：沙盒环境未安装 Java JDK，无法执行 `keytool` 命令。
+
+**解决方案**：
+```bash
+# 方案 1：在本地环境生成密钥（推荐）
+# 1. 在本地安装 Java JDK
+# 2. 在本地运行 keytool 生成密钥
+# 3. 将生成的 keystore 文件复制到项目
+
+# 方案 2：使用 Android Studio 生成
+# 1. 打开 Android Studio
+# 2. Build -> Generate Signed Bundle / APK
+# 3. 点击 "Create new..." 创建密钥库
+
+# 方案 3：仅构建 Debug APK（不需要签名）
+cd android
+./gradlew assembleDebug
+# 输出: android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+**详细步骤**：参见本文档第一节"环境准备"和第二节"生成签名密钥"。
+
+---
 
 ### 1. 修改包名后应用无法启动
 
