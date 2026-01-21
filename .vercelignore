@@ -1,0 +1,8 @@
+# Vercel 部署忽略文件 - 跳过 Android/iOS 构建
+android/
+ios/
+.capacitor/
+*.keystore
+*.jks
+*.p12
+*.p8

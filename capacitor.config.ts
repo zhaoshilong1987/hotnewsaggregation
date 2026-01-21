@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.quanyou.rebang',
+  appId: 'com.hotnewsaggregation.news',
   appName: '全网热点',
 
   // 本地构建输出目录（Capacitor 在本地测试时使用）
@@ -10,7 +10,7 @@ const config: CapacitorConfig = {
   server: {
     // ⭐ 关键配置：指向 Vercel 部署地址
     // 部署后替换为你的实际域名
-    url: 'https://hotlistnews.vercel.app',
+    url: 'https://hotnewsaggregation.vercel.app',
 
     // Android 配置
     androidScheme: 'https',    // Android 要求使用 https
@@ -18,7 +18,7 @@ const config: CapacitorConfig = {
 
     // 允许导航到外部链接（注意：是 allowNavigation，不是 allowedNavigation）
     allowNavigation: [
-      'https://hotlistnews.vercel.app',
+      'https://https://hotnewsaggregation.vercel.app',
       'https://*.vercel.app',
       'https://news.quanyouhulian.com'
     ]
@@ -59,6 +59,14 @@ const config: CapacitorConfig = {
       androidSpinnerStyle: 'large',
       iosSpinnerStyle: 'small',
       spinnerColor: '#F97316'
+    },
+     // App 配置
+    App: {
+      themeColor: '#F97316',
+      // 允许复制到剪贴板
+      copy: {
+        enabled: true
+      }
     }
   }
 };
