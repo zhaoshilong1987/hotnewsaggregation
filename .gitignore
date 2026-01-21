@@ -1,5 +1,14 @@
 .next
 
+# Capacitor / Mobile platforms
+android/
+ios/
+.capacitor/
+*.keystore
+*.jks
+*.p12
+*.p8
+
 # Dependencies
 node_modules/
 .pnp
