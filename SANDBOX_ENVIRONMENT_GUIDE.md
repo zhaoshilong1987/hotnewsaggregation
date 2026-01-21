@@ -37,6 +37,53 @@
 - Android SDK
 - Android Studio（可选）
 
+**环境配置**：
+
+**Windows:**
+```powershell
+# 1. 安装 Java JDK
+choco install openjdk17  # 使用 Chocolatey
+# 或手动下载：https://www.oracle.com/java/technologies/downloads/
+
+# 2. 安装 Android Studio
+# 下载：https://developer.android.com/studio
+# 安装后打开 SDK Manager 安装：
+# - Android SDK Platform-Tools
+# - Android SDK Build-Tools
+# - Android 14 (API 34)
+
+# 3. 配置环境变量
+# 系统属性 -> 环境变量 -> 系统变量
+# ANDROID_HOME = C:\Users\你的用户名\AppData\Local\Android\Sdk
+# Path 添加 %ANDROID_HOME%\platform-tools
+```
+
+**macOS:**
+```bash
+# 1. 安装 Java JDK
+brew install openjdk@17
+
+# 2. 安装 Android Studio
+# 下载：https://developer.android.com/studio
+
+# 3. 配置环境变量
+export ANDROID_HOME=$HOME/Library/Android/sdk
+export PATH=$PATH:$ANDROID_HOME/platform-tools
+```
+
+**Ubuntu/Debian:**
+```bash
+# 1. 安装 Java JDK
+sudo apt install openjdk-17-jdk
+
+# 2. 安装 Android Studio
+# 下载：https://developer.android.com/studio
+
+# 3. 配置环境变量
+export ANDROID_HOME=$HOME/Android/Sdk
+export PATH=$PATH:$ANDROID_HOME/platform-tools
+```
+
 ---
 
 ## 开发工作流
@@ -250,36 +297,61 @@ out/                             # ⚠️ 可选（用于本地打包）
 
 **步骤**：
 
-1. **在本地环境**：
-   ```bash
-   # 生成密钥库
-   keytool -genkey -v -keystore upload-keystore.jks \
-     -keyalg RSA -keysize 2048 -validity 10000 \
-     -alias upload
+**Windows:**
+```powershell
+# 1. 生成密钥库
+keytool -genkey -v -keystore upload-keystore.jks `
+  -keyalg RSA -keysize 2048 -validity 10000 `
+  -alias upload
 
-   # 创建签名配置
-   cat > android/keystore.properties << EOF
-   storePassword=your_keystore_password
-   keyPassword=your_key_password
-   keyAlias=upload
-   storeFile=../upload-keystore.jks
-   EOF
+# 2. 创建签名配置
+@"
+storePassword=your_keystore_password
+keyPassword=your_key_password
+keyAlias=upload
+storeFile=../upload-keystore.jks
+"@ | Out-File -Encoding UTF8 android\keystore.properties
 
-   # 将这些文件添加到 .gitignore
-   echo "upload-keystore.jks" >> .gitignore
-   echo "android/keystore.properties" >> .gitignore
-   ```
+# 3. 将这些文件添加到 .gitignore
+Add-Content .gitignore "upload-keystore.jks"
+Add-Content .gitignore "android\keystore.properties"
 
-2. **保存密钥信息**（不要提交到 Git）：
-   ```bash
-   # 创建本地密钥笔记
-   cat > ~/android-keys/project-keys.txt << EOF
-   Keystore 文件: upload-keystore.jks
-   Keystore password: [密码]
-   Key password: [密码]
-   Key alias: upload
-   EOF
-   ```
+# 4. 保存密钥信息（不要提交到 Git）
+@"
+Keystore 文件: upload-keystore.jks
+Keystore password: [密码]
+Key password: [密码]
+Key alias: upload
+"@ | Out-File -Encoding UTF8 "$env:USERPROFILE\android-keys\project-keys.txt"
+```
+
+**macOS / Linux:**
+```bash
+# 1. 生成密钥库
+keytool -genkey -v -keystore upload-keystore.jks \
+  -keyalg RSA -keysize 2048 -validity 10000 \
+  -alias upload
+
+# 2. 创建签名配置
+cat > android/keystore.properties << EOF
+storePassword=your_keystore_password
+keyPassword=your_key_password
+keyAlias=upload
+storeFile=../upload-keystore.jks
+EOF
+
+# 3. 将这些文件添加到 .gitignore
+echo "upload-keystore.jks" >> .gitignore
+echo "android/keystore.properties" >> .gitignore
+
+# 4. 保存密钥信息（不要提交到 Git）
+cat > ~/android-keys/project-keys.txt << EOF
+Keystore 文件: upload-keystore.jks
+Keystore password: [密码]
+Key password: [密码]
+Key alias: upload
+EOF
+```
 
 ### 场景 4：团队协作，密钥管理
 

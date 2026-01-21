@@ -13,11 +13,38 @@
 ### 1. 安装必需工具
 
 #### Java JDK
+
+**Windows:**
+```powershell
+# 方法 1：使用 Chocolatey（推荐）
+choco install openjdk17
+
+# 方法 2：手动下载安装
+# 下载地址：https://www.oracle.com/java/technologies/downloads/
+# 选择 Windows x64 Installer 版本
+# 安装后配置环境变量
+
+# 配置环境变量（系统环境变量）
+# JAVA_HOME=C:\Program Files\Java\jdk-17
+# Path 添加 %JAVA_HOME%\bin
+
+# 验证安装
+java -version
+```
+
+**macOS:**
 ```bash
-# macOS
+# 使用 Homebrew 安装
 brew install openjdk@17
 
-# Ubuntu/Debian
+# 验证安装
+java -version
+```
+
+**Ubuntu/Debian:**
+```bash
+# 安装 OpenJDK
+sudo apt update
 sudo apt install openjdk-17-jdk
 
 # 验证安装
@@ -25,6 +52,36 @@ java -version
 ```
 
 #### Android SDK
+
+**Windows:**
+```powershell
+# 推荐：使用 Android Studio 安装 SDK
+# 1. 下载 Android Studio：https://developer.android.com/studio
+# 2. 运行安装程序，勾选 "Android SDK Platform-Tools"
+# 3. 启动 Android Studio，打开 SDK Manager
+# 4. 安装以下组件：
+#    - Android SDK Platform-Tools
+#    - Android SDK Build-Tools 34.0.0
+#    - Android 14 (API 34)
+#    - Android SDK Command-line Tools
+
+# 配置环境变量（系统环境变量）
+# ANDROID_HOME=C:\Users\你的用户名\AppData\Local\Android\Sdk
+# Path 添加：
+#   %ANDROID_HOME%\emulator
+#   %ANDROID_HOME%\tools
+#   %ANDROID_HOME%\tools\bin
+#   %ANDROID_HOME%\platform-tools
+
+# 或使用 PowerShell 临时配置
+$env:ANDROID_HOME = "C:\Users\$env:USERNAME\AppData\Local\Android\Sdk"
+$env:Path += ";$env:ANDROID_HOME\emulator;$env:ANDROID_HOME\tools;$env:ANDROID_HOME\tools\bin;$env:ANDROID_HOME\platform-tools"
+
+# 验证环境变量
+echo $env:ANDROID_HOME
+```
+
+**macOS:**
 ```bash
 # 推荐使用 Android Studio 安装 SDK
 # 下载地址：https://developer.android.com/studio
@@ -34,7 +91,20 @@ java -version
 
 # 配置环境变量
 export ANDROID_HOME=$HOME/Library/Android/sdk  # macOS
-# export ANDROID_HOME=$HOME/Android/Sdk       # Linux
+
+export PATH=$PATH:$ANDROID_HOME/emulator
+export PATH=$PATH:$ANDROID_HOME/tools
+export PATH=$PATH:$ANDROID_HOME/tools/bin
+export PATH=$PATH:$ANDROID_HOME/platform-tools
+```
+
+**Ubuntu/Debian:**
+```bash
+# 推荐使用 Android Studio 安装 SDK
+# 下载地址：https://developer.android.com/studio
+
+# 配置环境变量
+export ANDROID_HOME=$HOME/Android/Sdk
 
 export PATH=$PATH:$ANDROID_HOME/emulator
 export PATH=$PATH:$ANDROID_HOME/tools
@@ -43,12 +113,30 @@ export PATH=$PATH:$ANDROID_HOME/platform-tools
 ```
 
 #### 安装 Android SDK 组件
+
 通过 SDK Manager 安装以下组件：
 - **Android SDK Platform-Tools** (最新版本)
 - **Android SDK Build-Tools** (最新版本)
 - **Android 14 (API 34)** 或更高版本的 SDK Platform
 - **Android SDK Command-line Tools**
 
+**Windows:**
+```powershell
+# 使用 SDK Manager 安装
+# 进入 SDK 目录
+cd "$env:ANDROID_HOME\cmdline-tools\latest\bin"
+
+# 安装组件
+.\sdkmanager.bat "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+
+# 查看已安装组件
+.\sdkmanager.bat --list_installed
+
+# 或使用 Android Studio 的 SDK Manager
+# Tools > SDK Manager > SDK Platforms / SDK Tools
+```
+
+**macOS / Linux:**
 ```bash
 # 使用 SDK Manager 安装
 sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
@@ -82,6 +170,22 @@ sdkmanager --list_installed
 
 ### 3. 验证环境
 
+**Windows:**
+```powershell
+# 检查 Java 版本
+java -version
+
+# 检查 Android SDK
+echo $env:ANDROID_HOME
+
+# 检查 ADB
+adb version
+
+# 检查 Gradle（将在第一次构建时自动下载）
+# Gradle Wrapper 会自动下载，无需手动安装
+```
+
+**macOS / Linux:**
 ```bash
 # 检查 Java 版本
 java -version
@@ -103,6 +207,26 @@ adb version
 
 ### 1. 创建密钥库文件（仅需一次）
 
+**Windows:**
+```powershell
+# 生成密钥库
+keytool -genkey -v -keystore upload-keystore.jks `
+  -keyalg RSA -keysize 2048 -validity 10000 `
+  -alias upload
+
+# 按提示输入：
+# - Keystore password（密钥库密码）
+# - Re-enter new password（再次输入密码）
+# - What is your first and last name?（姓名或组织名称）
+# - What is the name of your organizational unit?（部门名称，可直接回车）
+# - What is the name of your organization?（组织名称）
+# - What is the name of your City or Locality?（城市）
+# - What is the name of your State or Province?（省份）
+# - What is the two-letter country code for this unit?（国家代码，如 CN）
+# - Is CN=xxx correct?（确认信息，输入 yes）
+```
+
+**macOS / Linux:**
 ```bash
 # 生成密钥库
 keytool -genkey -v -keystore upload-keystore.jks \
@@ -128,6 +252,18 @@ Key alias: upload
 
 ### 3. 保护密钥
 
+**Windows:**
+```powershell
+# 将密钥库文件添加到 .gitignore
+Add-Content .gitignore "upload-keystore.jks"
+Add-Content .gitignore "*.jks"
+
+# 将密钥库文件存放在安全位置（不要提交到 Git）
+# 建议将密钥库文件移动到其他目录，如 C:\Keys\
+# Move-Item upload-keystore.jks C:\Keys\
+```
+
+**macOS / Linux:**
 ```bash
 # 将密钥库文件添加到 .gitignore
 echo "upload-keystore.jks" >> .gitignore
@@ -142,6 +278,19 @@ echo "*.jks" >> .gitignore
 
 ### 1. 构建 Next.js 应用
 
+**Windows:**
+```powershell
+# 进入项目目录
+cd C:\path\to\your\project
+
+# 安装依赖
+pnpm install
+
+# 构建生产版本
+pnpm run build
+```
+
+**macOS / Linux:**
 ```bash
 # 进入项目目录
 cd /path/to/your/project
@@ -195,6 +344,13 @@ storeFile=../upload-keystore.jks  # 密钥库文件路径（相对于该配置�
 ⚠️ **不要将 `keystore.properties` 提交到 Git！**
 
 添加到 `.gitignore`：
+
+**Windows:**
+```powershell
+Add-Content .gitignore "android/keystore.properties"
+```
+
+**macOS / Linux:**
 ```bash
 echo "android/keystore.properties" >> .gitignore
 ```
@@ -284,6 +440,26 @@ android {
 
 ### 方法 1：命令行打包（推荐）
 
+**Windows:**
+```powershell
+# 进入 Android 目录
+cd android
+
+# 清理旧构建
+.\gradlew.bat clean
+
+# 构建 Debug APK（用于测试）
+.\gradlew.bat assembleDebug
+
+# 构建 Release APK（用于发布）
+.\gradlew.bat assembleRelease
+
+# 输出位置
+# Debug: android\app\build\outputs\apk\debug\app-debug.apk
+# Release: android\app\build\outputs\apk\release\app-release.apk
+```
+
+**macOS / Linux:**
 ```bash
 # 进入 Android 目录
 cd android
@@ -304,6 +480,23 @@ cd android
 
 ### 方法 2：Android Studio
 
+**Windows:**
+```powershell
+# 打开 Android Studio
+# 方法 1：使用 Capacitor 命令
+npx cap open android
+
+# 方法 2：直接打开
+# 双击 android 目录
+# 或使用：
+start android
+
+# 在 Android Studio 中：
+# Build -> Build Bundle(s) / APK(s) -> Build APK(s)
+# 或 Build -> Generate Signed Bundle / APK -> 选择 APK 或 Bundle
+```
+
+**macOS / Linux:**
 ```bash
 # 打开 Android Studio
 open -a "Android Studio" android  # macOS
@@ -312,11 +505,23 @@ npx cap open android
 
 # 在 Android Studio 中：
 # Build -> Build Bundle(s) / APK(s) -> Build APK(s)
+```
 # 或 Build -> Generate Signed Bundle / APK -> 选择 APK 或 Bundle
 ```
 
 ### 多渠道打包（可选）
 
+**Windows:**
+```powershell
+# 构建所有变体
+.\gradlew.bat assembleRelease
+
+# 构建特定变体
+.\gradlew.bat assembleRelease -Pchannel=google
+.\gradlew.bat assembleRelease -Pchannel=huawei
+```
+
+**macOS / Linux:**
 ```bash
 # 构建所有变体
 ./gradlew assembleRelease
@@ -330,6 +535,18 @@ npx cap open android
 
 ## 六、构建 App Bundle（用于上架 Google Play）
 
+**Windows:**
+```powershell
+cd android
+
+# 构建 Release Bundle
+.\gradlew.bat bundleRelease
+
+# 输出位置
+# android\app\build\outputs\bundle\release\app-release.aab
+```
+
+**macOS / Linux:**
 ```bash
 cd android
 
@@ -346,6 +563,7 @@ cd android
 
 ### 1. 连接设备
 
+**Windows / macOS / Linux:**
 ```bash
 # 启用 USB 调试
 # 在手机上：设置 -> 开发者选项 -> USB 调试
@@ -356,6 +574,19 @@ adb devices
 
 ### 2. 安装 APK
 
+**Windows:**
+```powershell
+# 安装 Debug APK
+adb install android\app\build\outputs\apk\debug\app-debug.apk
+
+# 安装 Release APK
+adb install android\app\build\outputs\apk\release\app-release.apk
+
+# 覆盖安装（保留数据）
+adb install -r android\app\build\outputs\apk\debug\app-debug.apk
+```
+
+**macOS / Linux:**
 ```bash
 # 安装 Debug APK
 adb install android/app/build/outputs/apk/debug/app-debug.apk
@@ -580,6 +811,23 @@ cd android
 ### 2. 构建时提示找不到 Android SDK
 
 **解决**：
+
+**Windows:**
+```powershell
+# 检查环境变量
+echo $env:ANDROID_HOME
+
+# 重新配置环境变量
+# 方法 1：系统环境变量
+# 系统属性 -> 环境变量 -> 系统变量 -> 新建
+# 变量名：ANDROID_HOME
+# 变量值：C:\Users\你的用户名\AppData\Local\Android\Sdk
+
+# 方法 2：在 local.properties 中指定
+"sdk.dir=C:\\Users\\$env:USERNAME\\AppData\\Local\\Android\\Sdk" | Out-File -Encoding UTF8 android/local.properties
+```
+
+**macOS / Linux:**
 ```bash
 # 检查环境变量
 echo $ANDROID_HOME
@@ -594,6 +842,23 @@ echo "sdk.dir=/path/to/android/sdk" > android/local.properties
 ### 3. 构建时提示 Java 版本不兼容
 
 **解决**：
+
+**Windows:**
+```powershell
+# 检查 Java 版本
+java -version
+
+# 切换到 JDK 17 或更高版本
+# 方法 1：更新系统环境变量 JAVA_HOME
+# 方法 2：在 gradle.properties 中指定
+"org.gradle.java.home=C:\\Program Files\\Java\\jdk-17" | Out-File -Encoding UTF8 -Append android/gradle.properties
+
+# 方法 3：使用 Gradle JVM（Android Studio）
+# File -> Settings -> Build, Execution, Deployment -> Build Tools -> Gradle
+# Gradle JDK: 选择 JDK 17
+```
+
+**macOS / Linux:**
 ```bash
 # 检查 Java 版本
 java -version
@@ -608,6 +873,24 @@ echo "org.gradle.java.home=/path/to/jdk17" >> android/gradle.properties
 ### 4. Gradle 构建失败
 
 **解决**：
+
+**Windows:**
+```powershell
+cd android
+
+# 清理构建
+.\gradlew.bat clean
+
+# 删除缓存
+Remove-Item -Recurse -Force .gradle
+Remove-Item -Recurse -Force build
+Remove-Item -Recurse -Force "$env:USERPROFILE\.gradle\caches"
+
+# 重新构建
+.\gradlew.bat assembleDebug
+```
+
+**macOS / Linux:**
 ```bash
 cd android
 
@@ -627,6 +910,21 @@ rm -rf ~/.gradle/caches/
 **原因**：Next.js 未正确导出静态文件
 
 **解决**：
+
+**Windows:**
+```powershell
+# 确保 next.config.ts 配置正确
+# 检查 webDir 配置
+Select-String -Path capacitor.config.ts -Pattern "webDir"
+
+# 重新构建
+pnpm run build
+
+# 检查 out 目录是否存在
+Get-ChildItem out
+```
+
+**macOS / Linux:**
 ```bash
 # 确保 next.config.ts 配置正确
 # 检查 webDir 配置
@@ -644,6 +942,8 @@ ls -la out
 **原因**：网络安全配置或权限问题
 
 **解决**：
+
+**Windows / macOS / Linux:**
 ```bash
 # 检查权限
 grep "INTERNET" android/app/src/main/AndroidManifest.xml
@@ -673,6 +973,18 @@ View -> Tool Windows -> Logcat
 ### 8. 构建速度慢
 
 **优化**：
+
+**Windows:**
+```powershell
+# 启用 Gradle 缓存
+"org.gradle.caching=true" | Out-File -Encoding UTF8 -Append android/gradle.properties
+"org.gradle.parallel=true" | Out-File -Encoding UTF8 -Append android/gradle.properties
+"org.gradle.jvmargs=-Xmx2048m" | Out-File -Encoding UTF8 -Append android/gradle.properties
+
+# 使用 Gradle Daemon（默认已启用）
+```
+
+**macOS / Linux:**
 ```bash
 # 启用 Gradle 缓存
 echo "org.gradle.caching=true" >> android/gradle.properties
@@ -682,12 +994,50 @@ echo "org.gradle.jvmargs=-Xmx2048m" >> android/gradle.properties
 # 使用 Gradle Daemon（默认已启用）
 ```
 
+### 9. Windows 上执行 gradlew.bat 提示权限错误
+
+**错误信息**：
+```
+无法加载文件 gradlew.bat，因为在此系统上禁止运行脚本
+```
+
+**解决**：
+```powershell
+# 方法 1：临时允许脚本执行
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
+
+# 方法 2：以管理员身份运行 PowerShell
+# 右键点击 PowerShell -> 以管理员身份运行
+
+# 方法 3：检查文件是否有执行权限
+# 确保 gradlew.bat 文件存在
+Test-Path android\gradlew.bat
+
+# 方法 4：使用 Android Studio 构建
+# File -> Sync Project with Gradle Files
+# Build -> Build Bundle(s) / APK(s) -> Build APK(s)
+```
+
 ---
 
 ## 十一、快速命令清单
 
 ### 日常开发
 
+**Windows:**
+```powershell
+# 构建 Web
+pnpm install
+pnpm run build
+
+# 同步到 Android
+npx cap sync android
+
+# 运行到设备
+npx cap run android
+```
+
+**macOS / Linux:**
 ```bash
 # 构建 Web
 pnpm install
@@ -702,6 +1052,26 @@ npx cap run android
 
 ### 打包 APK
 
+**Windows:**
+```powershell
+# 1. 构建 Web
+pnpm run build
+
+# 2. 同步到 Android
+npx cap sync android
+
+# 3. 打包 APK
+cd android
+.\gradlew.bat clean
+.\gradlew.bat assembleDebug      # Debug 版本
+.\gradlew.bat assembleRelease    # Release 版本
+
+# 4. 输出位置
+# android\app\build\outputs\apk\debug\app-debug.apk
+# android\app\build\outputs\apk\release\app-release.apk
+```
+
+**macOS / Linux:**
 ```bash
 # 1. 构建 Web
 pnpm run build
@@ -722,6 +1092,23 @@ cd android
 
 ### 打包 App Bundle
 
+**Windows:**
+```powershell
+# 1. 构建 Web
+pnpm run build
+
+# 2. 同步到 Android
+npx cap sync android
+
+# 3. 打包 Bundle
+cd android
+.\gradlew.bat bundleRelease
+
+# 4. 输出位置
+# android\app\build\outputs\bundle\release\app-release.aab
+```
+
+**macOS / Linux:**
 ```bash
 # 1. 构建 Web
 pnpm run build
@@ -739,6 +1126,21 @@ cd android
 
 ### 清理和重置
 
+**Windows:**
+```powershell
+# 清理构建
+cd android
+.\gradlew.bat clean
+
+# 删除 Android 平台
+npx cap remove android
+
+# 重新添加平台
+npx cap add android
+npx cap sync android
+```
+
+**macOS / Linux:**
 ```bash
 # 清理构建
 cd android && ./gradlew clean
@@ -748,6 +1150,8 @@ npx cap remove android
 
 # 重新添加平台
 npx cap add android
+npx cap sync android
+```
 npx cap sync android
 ```
 
@@ -784,6 +1188,141 @@ defaultConfig {
 ---
 
 ## 附录
+
+### Windows 环境完整配置示例
+
+#### 1. 安装 Java JDK
+
+```powershell
+# 使用 Chocolatey 安装（需要管理员权限）
+choco install openjdk17
+
+# 验证安装
+java -version
+
+# 配置环境变量
+# 系统属性 -> 环境变量 -> 系统变量
+# 新建：
+# - JAVA_HOME = C:\Program Files\Java\jdk-17
+# 编辑 Path，添加：
+# - %JAVA_HOME%\bin
+```
+
+#### 2. 安装 Android Studio 和 SDK
+
+```powershell
+# 1. 下载并安装 Android Studio
+# https://developer.android.com/studio
+
+# 2. 启动 Android Studio，完成初始设置
+
+# 3. 打开 SDK Manager
+# Tools -> SDK Manager
+
+# 4. 安装以下组件：
+#    - SDK Platforms: Android 14 (API 34)
+#    - SDK Tools:
+#      - Android SDK Build-Tools 34.0.0
+#      - Android SDK Platform-Tools
+#      - Android SDK Command-line Tools (latest)
+
+# 5. 配置环境变量
+# 系统属性 -> 环境变量 -> 系统变量
+# 新建：
+# - ANDROID_HOME = C:\Users\你的用户名\AppData\Local\Android\Sdk
+# 编辑 Path，添加：
+# - %ANDROID_HOME%\emulator
+# - %ANDROID_HOME%\platform-tools
+# - %ANDROID_HOME%\tools
+# - %ANDROID_HOME%\tools\bin
+```
+
+#### 3. 生成签名密钥
+
+```powershell
+# 进入项目目录
+cd C:\path\to\your\project
+
+# 生成密钥库
+keytool -genkey -v -keystore upload-keystore.jks `
+  -keyalg RSA -keysize 2048 -validity 10000 `
+  -alias upload
+
+# 创建签名配置文件
+@"
+storePassword=你的密钥库密码
+keyPassword=你的密钥密码
+keyAlias=upload
+storeFile=../upload-keystore.jks
+"@ | Out-File -Encoding UTF8 android\keystore.properties
+```
+
+#### 4. 构建项目
+
+```powershell
+# 安装依赖
+pnpm install
+
+# 构建生产版本
+pnpm run build
+
+# 同步到 Android
+npx cap sync android
+```
+
+#### 5. 构建 APK
+
+```powershell
+# 进入 Android 目录
+cd android
+
+# 清理旧构建
+.\gradlew.bat clean
+
+# 构建 Debug APK
+.\gradlew.bat assembleDebug
+
+# 构建 Release APK
+.\gradlew.bat assembleRelease
+
+# APK 输出位置
+# android\app\build\outputs\apk\debug\app-debug.apk
+# android\app\build\outputs\apk\release\app-release.apk
+```
+
+#### 6. 安装到设备
+
+```powershell
+# 连接设备（启用 USB 调试）
+adb devices
+
+# 安装 APK
+adb install android\app\build\outputs\apk\debug\app-debug.apk
+```
+
+#### 7. PowerShell 执行策略问题
+
+如果执行 `gradlew.bat` 时提示权限错误：
+
+```powershell
+# 临时允许脚本执行（仅当前会话）
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
+
+# 或以管理员身份运行 PowerShell
+# 右键 -> 以管理员身份运行
+```
+
+#### 8. Git Bash 替代方案
+
+如果你更喜欢使用 Git Bash：
+
+```bash
+# 在 Git Bash 中，命令与 macOS/Linux 相同
+cd android
+./gradlew clean
+./gradlew assembleDebug
+./gradlew assembleRelease
+```
 
 ### 相关文档
 
