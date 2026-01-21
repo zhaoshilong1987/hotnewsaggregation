@@ -995,34 +995,139 @@ rm -rf ~/.gradle/caches/
 
 ### 5. 同步时提示 out 目录不存在
 
-**原因**：Next.js 未正确导出静态文件
+**错误信息**：
+```
+copy android [warn] Cannot copy web assets from out to android\app\src\main\assets\public
+Web asset directory specified by webDir does not exist.
+```
 
-**解决**：
+**原因**：
+1. Android 平台未完全初始化
+2. Next.js 未构建，`out` 目录不存在
+
+**解决方法 1：首次初始化（推荐）**
 
 **Windows:**
 ```powershell
-# 确保 next.config.ts 配置正确
-# 检查 webDir 配置
-Select-String -Path capacitor.config.ts -Pattern "webDir"
+# 1. 添加 Android 平台（创建完整的 Android 目录结构）
+npx cap add android
 
-# 重新构建
-pnpm run build
+# 2. 构建 Next.js 应用，生成 out 目录
+pnpm run build:vercel
 
-# 检查 out 目录是否存在
+# 3. 验证 out 目录是否存在
 Get-ChildItem out
+
+# 4. 同步到 Android
+npx cap sync android
 ```
 
 **macOS / Linux:**
 ```bash
-# 确保 next.config.ts 配置正确
-# 检查 webDir 配置
-cat capacitor.config.ts | grep webDir
+# 1. 添加 Android 平台
+npx cap add android
 
-# 重新构建
+# 2. 构建 Next.js 应用
 pnpm run build
 
-# 检查 out 目录是否存在
+# 3. 验证 out 目录
 ls -la out
+
+# 4. 同步到 Android
+npx cap sync android
+```
+
+**解决方法 2：清理并重新初始化**
+
+**Windows:**
+```powershell
+# 1. 删除 Android 平台
+npx cap remove android
+
+# 2. 删除构建输出
+Remove-Item -Recurse -Force out
+
+# 3. 检查 capacitor.config.ts 的 webDir 配置
+Select-String -Path capacitor.config.ts -Pattern "webDir"
+
+# 应该是：webDir: 'out',
+
+# 4. 重新构建
+pnpm run build:vercel
+
+# 5. 重新添加 Android 平台
+npx cap add android
+
+# 6. 同步
+npx cap sync android
+```
+
+**macOS / Linux:**
+```bash
+# 1. 删除 Android 平台
+npx cap remove android
+
+# 2. 删除构建输出
+rm -rf out
+
+# 3. 检查 webDir 配置
+cat capacitor.config.ts | grep webDir
+
+# 4. 重新构建
+pnpm run build
+
+# 5. 重新添加 Android 平台
+npx cap add android
+
+# 6. 同步
+npx cap sync android
+```
+
+**解决方法 3：手动创建目录（不推荐）**
+
+**Windows:**
+```powershell
+# 手动创建缺失的目录
+New-Item -ItemType Directory -Force -Path "android\app\src\main\assets"
+
+# 然后执行同步
+npx cap sync android
+```
+
+**macOS / Linux:**
+```bash
+# 手动创建缺失的目录
+mkdir -p android/app/src/main/assets
+
+# 然后执行同步
+npx cap sync android
+```
+
+**检查配置**：
+
+确保 `capacitor.config.ts` 中的 webDir 配置正确：
+
+```typescript
+const config: CapacitorConfig = {
+  appId: 'com.hotnewsaggregation.news',
+  appName: '全网热点',
+  webDir: 'out',  // ⚠️ 必须是 'out'，与 Next.js 输出目录一致
+  // ...
+}
+```
+
+**验证步骤**：
+
+**Windows:**
+```powershell
+# 1. 检查 out 目录是否存在
+Test-Path out
+
+# 2. 检查 Android 平台是否已添加
+Test-Path android
+
+# 3. 检查 capacitor.config.ts 配置
+Select-String -Path capacitor.config.ts -Pattern "webDir"
 ```
 
 ### 6. APK 安装后无法联网
