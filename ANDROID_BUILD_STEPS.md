@@ -10,6 +10,75 @@
 
 ## 一、环境准备
 
+### 0. Windows 环境前置配置
+
+#### 安装 pnpm 包管理器
+
+**Windows 环境必须先安装 pnpm，否则无法执行项目命令。**
+
+**方法 1：使用 npm 全局安装（推荐）**
+```powershell
+# 使用 npm 全局安装 pnpm
+npm install -g pnpm
+
+# 验证安装
+pnpm --version
+```
+
+**方法 2：使用独立安装脚本**
+```powershell
+# 下载并运行 pnpm 安装脚本
+iwr https://get.pnpm.io/install.ps1 -useb | iex
+
+# 验证安装
+pnpm --version
+```
+
+**方法 3：使用 Chocolatey**
+```powershell
+# 使用 Chocolatey 安装（需要管理员权限）
+choco install pnpm
+
+# 验证安装
+pnpm --version
+```
+
+**方法 4：使用 Scoop**
+```powershell
+# 使用 Scoop 安装
+scoop install pnpm
+
+# 验证安装
+pnpm --version
+```
+
+#### 配置 PowerShell 执行策略（如需要）
+
+如果执行 pnpm 命令时提示"无法加载文件"，需要配置执行策略：
+
+```powershell
+# 临时允许脚本执行（仅当前会话，推荐）
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
+
+# 或使用 CMD 代替 PowerShell（更简单）
+# 在 CMD 中执行 pnpm 命令，不受 PowerShell 执行策略限制
+```
+
+#### 使用构建替代方案（避免 bash 脚本依赖）
+
+Windows 环境下，项目构建脚本依赖 bash，推荐使用以下替代方案：
+
+```powershell
+# 方法 1：使用 pnpm run build:vercel（推荐）
+pnpm run build:vercel
+
+# 方法 2：直接使用 Next.js 构建
+npx next build
+
+# 方法 3：安装 Git Bash 后使用 pnpm run build
+# https://git-scm.com/download/win
+```
+
 ### 1. 安装必需工具
 
 #### Java JDK
@@ -283,10 +352,16 @@ echo "*.jks" >> .gitignore
 # 进入项目目录
 cd C:\path\to\your\project
 
-# 安装依赖
+# 安装依赖（如果已安装 pnpm）
 pnpm install
 
-# 构建生产版本
+# 构建生产版本（推荐使用 build:vercel 避免脚本依赖）
+pnpm run build:vercel
+
+# 或直接使用 Next.js 构建
+npx next build
+
+# 如果使用 Git Bash 或 WSL，也可以使用：
 pnpm run build
 ```
 
@@ -302,9 +377,19 @@ pnpm install
 pnpm run build
 ```
 
+**Windows 环境特别说明**：
+
+| 问题 | 解决方案 |
+|-----|---------|
+| pnpm 命令无法识别 | 使用 `npm install -g pnpm` 全局安装 |
+| PowerShell 执行策略限制 | 使用 `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process` 临时允许 |
+| 构建脚本依赖 bash | 使用 `pnpm run build:vercel` 或 `npx next build` 替代 `pnpm run build` |
+| 不想配置 PowerShell | 使用 CMD 终端执行命令 |
+
 **注意事项**：
 - 如果项目有 API 路由，静态导出时需要注意（详见下方特殊处理）
 - 本项目配置 `webDir: 'out'`，需要导出静态文件
+- Windows 环境推荐使用 `pnpm run build:vercel` 避免脚本兼容性问题
 
 ### 2. 静态导出（如果需要）
 
@@ -312,8 +397,11 @@ pnpm run build
 # Next.js 15 推荐方式（已在 next.config.ts 中配置）
 # 如果配置了 output: 'export'，直接运行 build 即可
 
-# 或手动导出
-npx next export -o out
+# Windows 环境使用：
+npx next build
+
+# macOS / Linux 或已安装 Git Bash 的 Windows 环境：
+pnpm run build
 ```
 
 ### 3. 同步到 Capacitor
@@ -1018,6 +1106,142 @@ Test-Path android\gradlew.bat
 # Build -> Build Bundle(s) / APK(s) -> Build APK(s)
 ```
 
+### 10. Windows 环境下 pnpm 命令无法识别
+
+**错误信息**：
+```
+pnpm : 无法将"pnpm"项识别为 cmdlet、函数、脚本文件或可运行程序的名称
+```
+
+**原因**：Windows 环境未安装 pnpm 包管理器
+
+**解决方案**：
+
+**方法 1：使用 npm 全局安装（推荐）**
+```powershell
+# 使用 npm 全局安装 pnpm
+npm install -g pnpm
+
+# 验证安装
+pnpm --version
+```
+
+**方法 2：使用独立安装脚本**
+```powershell
+# 下载并运行 pnpm 安装脚本
+iwr https://get.pnpm.io/install.ps1 -useb | iex
+
+# 验证安装
+pnpm --version
+```
+
+**方法 3：使用 Chocolatey**
+```powershell
+# 使用 Chocolatey 安装（需要管理员权限）
+choco install pnpm
+
+# 验证安装
+pnpm --version
+```
+
+**方法 4：使用 Scoop**
+```powershell
+# 使用 Scoop 安装
+scoop install pnpm
+
+# 验证安装
+pnpm --version
+```
+
+### 11. PowerShell 执行策略限制导致 npm 无法加载
+
+**错误信息**：
+```
+无法加载文件，因为在此系统上禁止运行脚本
+```
+
+**原因**：PowerShell 默认执行策略限制
+
+**解决方案**：
+
+**方法 1：临时允许脚本执行（推荐）**
+```powershell
+# 仅在当前 PowerShell 会话中临时允许脚本执行
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
+
+# 然后执行 pnpm 命令
+pnpm install
+```
+
+**方法 2：使用 CMD 代替 PowerShell**
+```cmd
+# 使用 CMD 终端执行命令，不受 PowerShell 执行策略限制
+cd C:\path\to\your\project
+pnpm install
+pnpm run build
+```
+
+**方法 3：以管理员身份运行 PowerShell**
+```powershell
+# 右键点击 PowerShell -> 以管理员身份运行
+# 然后修改执行策略
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+### 12. Windows 执行 pnpm run build 报错提示安装 WSL
+
+**错误信息**：
+```
+bash: ./scripts/build.sh: No such file or directory
+# 或
+系统找不到指定的文件
+```
+
+**原因**：项目构建脚本依赖 bash (`bash ./scripts/build.sh`)，Windows 环境默认不支持
+
+**解决方案**：
+
+**方法 1：使用 pnpm run build:vercel（推荐）**
+```powershell
+# 使用直接调用 Next.js 构建，避免 bash 脚本依赖
+pnpm run build:vercel
+
+# 这个命令等同于直接运行：
+npx next build
+```
+
+**方法 2：使用直接命令**
+```powershell
+# 直接调用 Next.js 构建
+npx next build
+```
+
+**方法 3：安装 Git Bash**
+```powershell
+# 1. 安装 Git for Windows
+# https://git-scm.com/download/win
+
+# 2. 使用 Git Bash 执行命令
+# 打开 Git Bash，在项目目录执行：
+cd /c/path/to/your/project
+pnpm run build
+```
+
+**方法 4：安装 WSL（Windows Subsystem for Linux）**
+```powershell
+# 1. 启用 WSL 功能（需要管理员权限）
+dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
+
+# 2. 重启电脑
+
+# 3. 在 Microsoft Store 中安装 Linux 发行版（如 Ubuntu）
+
+# 4. 使用 WSL 执行命令
+wsl
+cd /mnt/c/path/to/your/project
+pnpm run build
+```
+
 ---
 
 ## 十一、快速命令清单
@@ -1335,6 +1559,203 @@ cd android
 - [keytool 文档](https://docs.oracle.com/javase/8/docs/technotes/tools/unix/keytool.html)
 - [adb 命令参考](https://developer.android.com/studio/command-line/adb)
 - [Gradle 命令参考](https://docs.gradle.org/current/userguide/command_line_interface.html)
+
+---
+
+## 十三、部署配置（Vercel + 沙盒环境）
+
+### 1. 从 Cloudflare Pages 切换到 Vercel
+
+本项目已从 Cloudflare Pages 切换到 Vercel 作为主要部署平台，主要原因：
+
+- Vercel 对 Next.js 支持更完善
+- 避免在无 Java 环境下触发 Android 构建
+- 更好的 CI/CD 集成
+
+### 2. Vercel 部署配置
+
+#### 创建 .vercelignore 文件
+
+在项目根目录创建 `.vercelignore`，忽略移动端相关文件：
+
+```
+# Vercel 部署时忽略的文件和目录
+
+# 移动端平台文件
+android/
+ios/
+.capacitor/
+
+# 密钥文件
+upload-keystore.jks
+*.jks
+keystore.properties
+
+# 其他不需要部署的文件
+*.log
+.DS_Store
+Thumbs.db
+```
+
+**作用**：
+- Vercel 部署时不会上传 Android/iOS 相关文件
+- 避免在 Vercel 构建环境中触发 Capacitor postinstall 脚本
+- 保护签名密钥不被上传
+
+### 3. 配置 Vercel 跳过 Capacitor postinstall 脚本
+
+在 `package.json` 中配置：
+
+```json
+{
+  "scripts": {
+    "postinstall": "capacitor sync",
+    "postinstall:vercel": "echo 'Skipping Capacitor sync on Vercel'"
+  }
+}
+```
+
+在 Vercel 项目设置中配置环境变量：
+
+- `VERCEL` = `1`（Vercel 自动提供）
+- 使用环境变量判断是否在 Vercel 环境
+
+### 4. Vercel 构建命令配置
+
+在 Vercel 项目设置中配置：
+
+**构建命令**：
+```
+pnpm install
+pnpm run build:vercel
+```
+
+**输出目录**：
+```
+out
+```
+
+**环境变量**（可选）：
+```
+NEXT_PUBLIC_API_URL=https://your-api.com
+```
+
+### 5. 沙盒环境与本地环境协作
+
+#### 沙盒环境（Web 开发）
+
+**适用场景**：
+- Web 功能开发和调试
+- UI/UX 开发
+- API 接口开发
+- 代码编写和测试
+
+**操作流程**：
+```bash
+# 在沙盒环境中
+cd /workspace/projects/your-project
+
+# 安装依赖（如需要）
+pnpm install
+
+# 启动开发服务器
+coze dev
+
+# 修改代码会自动热更新
+
+# 构建生产版本（用于 Android 打包）
+pnpm run build:vercel
+```
+
+#### 本地环境（Android 打包）
+
+**适用场景**：
+- Android APK/AAB 打包
+- 真机测试
+- 应用上架
+
+**操作流程**：
+```powershell
+# 在本地 Windows 环境中
+cd C:\path\to\your\project
+
+# 1. 从沙盒环境复制代码到本地
+# 使用 git clone 或手动复制
+
+# 2. 安装依赖（如果未安装 pnpm）
+npm install -g pnpm
+pnpm install
+
+# 3. 构建 Web 应用
+pnpm run build:vercel
+
+# 4. 同步到 Android
+npx cap sync android
+
+# 5. 打包 APK
+cd android
+.\gradlew.bat clean
+.\gradlew.bat assembleDebug    # Debug 版本
+.\gradlew.bat assembleRelease  # Release 版本
+```
+
+### 6. 最佳实践
+
+#### 开发流程
+
+1. **日常开发（沙盒环境）**
+   - 使用沙盒环境进行 Web 功能开发
+   - 利用热更新快速迭代
+   - 在浏览器中测试 Web 功能
+
+2. **移动端测试（本地环境）**
+   - 定期将代码同步到本地环境
+   - 构建 Android APK
+   - 在真机上测试移动端功能
+
+3. **版本发布（本地环境）**
+   - 在本地环境生成签名密钥
+   - 构建 Release APK/AAB
+   - 上架 Google Play Store
+
+#### 代码同步策略
+
+```bash
+# 方案 1：使用 Git（推荐）
+# 沙盒环境提交代码
+git add .
+git commit -m "feat: add new feature"
+git push origin main
+
+# 本地环境拉取代码
+git pull origin main
+
+# 方案 2：手动复制（简单但不推荐）
+# 从沙盒环境导出文件
+# 复制到本地环境
+```
+
+#### 忽略文件管理
+
+确保 `.gitignore` 包含以下内容：
+
+```
+# 移动端平台文件（仅在本地环境生成）
+android/
+ios/
+.capacitor/
+
+# 密钥文件（仅在本地环境生成）
+upload-keystore.jks
+*.jks
+keystore.properties
+
+# 其他忽略
+node_modules/
+.next/
+out/
+dist/
+```
 
 ---
 
