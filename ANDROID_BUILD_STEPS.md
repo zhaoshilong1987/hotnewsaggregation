@@ -1041,8 +1041,8 @@ npx cap sync android
 
 **Windows:**
 ```powershell
-# 1. 删除 Android 平台
-npx cap remove android
+# 1. 删除 Android 平台（直接删除目录，Capacitor CLI 没有 remove 命令）
+Remove-Item -Recurse -Force android
 
 # 2. 删除构建输出
 Remove-Item -Recurse -Force out
@@ -1064,8 +1064,8 @@ npx cap sync android
 
 **macOS / Linux:**
 ```bash
-# 1. 删除 Android 平台
-npx cap remove android
+# 1. 删除 Android 平台（直接删除目录，Capacitor CLI 没有 remove 命令）
+rm -rf android
 
 # 2. 删除构建输出
 rm -rf out
@@ -1461,8 +1461,9 @@ cd android
 cd android
 .\gradlew.bat clean
 
-# 删除 Android 平台
-npx cap remove android
+# 删除 Android 平台（直接删除目录，Capacitor CLI 没有 remove 命令）
+cd ..
+Remove-Item -Recurse -Force android
 
 # 重新添加平台
 npx cap add android
@@ -1472,10 +1473,10 @@ npx cap sync android
 **macOS / Linux:**
 ```bash
 # 清理构建
-cd android && ./gradlew clean
+cd android && ./gradlew clean && cd ..
 
-# 删除 Android 平台
-npx cap remove android
+# 删除 Android 平台（直接删除目录，Capacitor CLI 没有 remove 命令）
+rm -rf android
 
 # 重新添加平台
 npx cap add android
