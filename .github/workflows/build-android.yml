@@ -1,0 +1,171 @@
+name: Build Android APK
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+env:
+  JAVA_VERSION: '21'
+  NODE_VERSION: '20'
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'gradle'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-store-path.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Next.js
+        run: |
+          # 构建 Next.js 静态导出
+          npx next build
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x android/gradlew
+
+      - name: Sync Capacitor
+        run: |
+          npx cap sync android
+
+      - name: Build Release APK
+        run: |
+          cd android
+          ./gradlew assembleRelease --no-daemon
+        env:
+          # 可选：设置签名配置（需要在 Secrets 中配置）
+          # KEYSTORE_FILE: ${{ secrets.KEYSTORE_FILE }}
+          # KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          # KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          # KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: android/app/build/outputs/apk/release/*.apk
+          retention-days: 30
+
+      - name: Release Summary
+        if: success()
+        run: |
+          echo "## 🎉 APK 构建成功！" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "构建信息：" >> $GITHUB_STEP_SUMMARY
+          echo "- 分支: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- 提交: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Java 版本: ${{ env.JAVA_VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Node 版本: ${{ env.NODE_VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "APK 文件已上传到 Artifacts，可以在工作流运行页面下载。" >> $GITHUB_STEP_SUMMARY
+
+  build-bundle:
+    runs-on: ubuntu-latest
+    # 仅在 tag 触发时构建 AAB（用于上传到 Google Play）
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'gradle'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-store-path.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Next.js
+        run: npx next build
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x android/gradlew
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Build Release Bundle (AAB)
+        run: |
+          cd android
+          ./gradlew bundleRelease --no-daemon
+
+      - name: Upload AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-bundle
+          path: android/app/build/outputs/bundle/release/*.aab
+          retention-days: 30

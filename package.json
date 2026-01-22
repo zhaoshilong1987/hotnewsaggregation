@@ -5,6 +5,7 @@
   "scripts": {
     "build": "bash ./scripts/build.sh",
     "build:vercel": "npx next build",
+    "build:apk": "bash ./scripts/build-apk.sh",
     "dev": "bash ./scripts/dev.sh",
     "preinstall": "npx only-allow pnpm",
     "lint": "eslint",
