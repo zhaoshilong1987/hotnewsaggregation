@@ -521,7 +521,7 @@ export default function Home() {
             </button>
 
             {/* 平台标签列表 */}
-            <div className="flex gap-2 overflow-x-auto scrollbar-hide flex-1">
+            <div className="flex gap-2 overflow-x-auto scrollbar-auto-hide flex-1">
               {visiblePlatforms.map((platformKey) => {
                 const platform = PLATFORMS.find((p) => p.key === platformKey);
                 if (!platform) return null;
@@ -567,7 +567,7 @@ export default function Home() {
       {/* 主内容区 - 下拉刷新 */}
       <div
         ref={scrollRef}
-        className="min-h-screen overflow-y-auto"
+        className="min-h-screen overflow-y-auto scrollbar-auto-hide"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}

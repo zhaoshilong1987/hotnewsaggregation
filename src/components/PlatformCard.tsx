@@ -77,7 +77,7 @@ export default function PlatformCard({
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-3 py-2 space-y-2"
+        className="flex-1 overflow-y-auto px-3 py-2 space-y-2 scrollbar-auto-hide"
         style={{ maxHeight: '400px' }}
       >
         {displayedNews.map((item, index) => (
