@@ -1419,6 +1419,155 @@ cd android
 .\gradlew.bat properties --console=plain | Select-String -Pattern "java"
 ```
 
+#### 错误信息 3：Unsupported class file major version
+
+**错误信息**：
+```
+BUG! exception in phase 'semantic analysis' in source unit '_BuildScript_' 
+Unsupported class file major version 69
+```
+
+**原因**：
+- Gradle 版本太旧，不支持 Java 21+
+- Gradle 使用了错误的 Java 版本
+- class file version 69 对应 Java 25（可能是预览版或版本检测问题）
+
+**Java 版本与 class file version 对照表**：
+
+| Java 版本 | Class File Version | Gradle 最低要求 |
+|-----------|-------------------|----------------|
+| Java 17 | 61 | Gradle 7.3+ |
+| Java 21 | 65 | Gradle 8.6+ |
+| Java 22 | 66 | Gradle 8.10+ |
+| Java 23+ | 67+ | Gradle 8.10+ |
+
+**解决方案 A：检查并升级 Gradle 版本（推荐）**
+
+**步骤 1：检查当前 Gradle 版本**
+
+```powershell
+cd android
+
+# 查看 Gradle 版本
+.\gradlew.bat --version
+
+# 查看 Gradle wrapper 配置
+Get-Content gradle\wrapper\gradle-wrapper.properties | Select-String -Pattern "distributionUrl"
+```
+
+**步骤 2：根据 Gradle 版本决定方案**
+
+**如果 Gradle 版本 < 8.6**：需要升级到 8.10+
+
+```powershell
+cd android
+
+# 编辑 gradle/wrapper/gradle-wrapper.properties
+notepad gradle\wrapper\gradle-wrapper.properties
+
+# 修改 distributionUrl 为 Gradle 8.10.2
+# distributionUrl=https\://services.gradle.org/distributions/gradle-8.10.2-all.zip
+
+# 保存后重新构建
+.\gradlew.bat clean
+.\gradlew.bat assembleRelease --no-daemon
+```
+
+**如果 Gradle 版本 >= 8.6**：确保使用 Java 21
+
+```powershell
+# 检查当前 Java 版本
+java -version
+
+# 临时设置环境变量（当前会话）
+$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21.x.xx-hotspot"
+$env:Path = "$env:JAVA_HOME\bin;$env:Path"
+
+# 验证
+java -version
+
+# 重新构建
+cd android
+.\gradlew.bat clean
+.\gradlew.bat assembleRelease --no-daemon
+```
+
+**解决方案 B：降级使用 Java 17（备选）**
+
+如果不便升级 Gradle 或 Java 21，可以降级使用 Java 17：
+
+```powershell
+cd android
+
+# 在 gradle.properties 中指定 Java 17
+"org.gradle.java.home=C:\\Program Files\\Java\\jdk-17" | Out-File -Encoding UTF8 -Append gradle.properties
+
+# 修改 build.gradle 中的 Java 版本配置
+notepad app\build.gradle
+
+# 确保 compileOptions 设置为：
+# sourceCompatibility JavaVersion.VERSION_17
+# targetCompatibility JavaVersion.VERSION_17
+
+# 重新构建
+.\gradlew.bat clean
+.\gradlew.bat assembleRelease --no-daemon
+```
+
+**解决方案 C：检查系统多 Java 版本冲突**
+
+```powershell
+# 查看所有安装的 Java 版本
+Get-ChildItem "C:\Program Files\Java" -Directory
+
+# 查看当前 Java 版本
+java -version
+
+# 查看环境变量
+echo $env:JAVA_HOME
+
+# 确保使用正确的 Java 版本
+$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21.x.xx-hotspot"
+$env:Path = "$env:JAVA_HOME\bin;$env:Path"
+
+# 验证
+java -version
+
+# 重新构建
+cd android
+.\gradlew.bat clean
+.\gradlew.bat assembleRelease --no-daemon
+```
+
+**诊断命令（帮助确定问题）**：
+
+```powershell
+# 1. 检查当前 Java 版本
+java -version
+
+# 2. 检查 Gradle 版本
+cd android
+.\gradlew.bat --version
+
+# 3. 检查 Gradle wrapper 配置
+Get-Content gradle\wrapper\gradle-wrapper.properties
+
+# 4. 检查 build.gradle 中的 Java 版本配置
+Get-Content build.gradle | Select-String -Pattern "sourceCompatibility|targetCompatibility"
+
+# 5. 查看详细的构建信息
+.\gradlew.bat assembleRelease --info | Select-String -Pattern "Java|version"
+```
+
+**Gradle 版本与 Java 兼容性参考**：
+
+| Gradle 版本 | 支持 Java 版本 | 是否支持 Java 21 | 是否支持 Java 22+ |
+|------------|--------------|-----------------|-------------------|
+| 8.0 - 8.4 | Java 8-19 | ❌ 不支持 | ❌ 不支持 |
+| 8.5 | Java 8-20 | ❌ 不支持 | ❌ 不支持 |
+| 8.6 - 8.9 | Java 8-21 | ✅ 支持 | ❌ 不支持 |
+| 8.10+ | Java 8-22+ | ✅ 支持 | ✅ 支持 |
+
 ### 4. Gradle 构建失败
 
 #### 错误信息 1：无法移动临时工作空间
