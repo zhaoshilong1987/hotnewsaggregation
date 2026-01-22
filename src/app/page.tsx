@@ -267,7 +267,12 @@ export default function Home() {
     });
 
     // 按平台标签顺序排序
-    const sortedPlatforms = visiblePlatforms
+    // 如果 visiblePlatforms 为空，使用所有平台作为默认值
+    const platformsToSort = visiblePlatforms.length > 0
+      ? visiblePlatforms
+      : Object.keys(grouped);
+
+    const sortedPlatforms = platformsToSort
       .filter(key => grouped[key] && grouped[key].length > 0)
       .map(key => ({
         platform: PLATFORMS.find(p => p.key === key),
@@ -639,7 +644,7 @@ export default function Home() {
             </div>
           ) : groupedNews && groupedNews.length > 0 ? (
             // 全部标签：显示平台卡片网格布局
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {groupedNews.map((item) => (
                 <PlatformCard
                   key={item.platform!.key}

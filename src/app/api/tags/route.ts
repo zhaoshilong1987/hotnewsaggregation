@@ -49,10 +49,36 @@ export async function GET() {
   }
 }
 
-// POST - 更新平台标签配置（已禁用，配置现在是静态的）
-export async function POST() {
-  return NextResponse.json({
-    success: false,
-    error: 'Platform tags configuration is read-only in Edge Runtime. Please modify the configuration in the code.',
-  }, { status: 405 });
+// POST - 更新平台标签配置
+export async function POST(request: Request) {
+  try {
+    const body = await request.json() as { visible?: string[]; hidden?: string[] };
+
+    // 更新内存中的配置
+    if (body.visible) {
+      PLATFORMS_CONFIG.settings.tags.visible = body.visible;
+    }
+    if (body.hidden) {
+      PLATFORMS_CONFIG.settings.tags.hidden = body.hidden;
+    }
+
+    console.log('Updated platform tags config:', {
+      visible: PLATFORMS_CONFIG.settings.tags.visible,
+      hidden: PLATFORMS_CONFIG.settings.tags.hidden,
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        visible: PLATFORMS_CONFIG.settings.tags.visible,
+        hidden: PLATFORMS_CONFIG.settings.tags.hidden,
+      },
+    });
+  } catch (error) {
+    console.error('Failed to update tags config:', error);
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to update tags config',
+    }, { status: 500 });
+  }
 }

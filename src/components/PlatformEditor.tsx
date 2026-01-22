@@ -309,16 +309,6 @@ export default function PlatformEditor({
             </div>
           </div>
         </div>
-
-        {/* 底部按钮 */}
-        <div className="p-4 border-t border-gray-200">
-          <button
-            onClick={onCancel}
-            className="w-full px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
-          >
-            完成
-          </button>
-        </div>
       </div>
     </div>
   );
