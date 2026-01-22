@@ -42,33 +42,4 @@ const config: CapacitorConfig = {
       enabled: false
     },
 
-    // 状态栏样式
-    StatusBar: {
-      style: 'LIGHT',
-      backgroundColor: '#F97316'
-    },
 
-    // 启动屏配置
-    SplashScreen: {
-      launchShowDuration: 0,
-      launchAutoHide: true,
-      backgroundColor: '#F97316',
-      androidSplashResourceName: 'splash',
-      androidScaleType: 'CENTER_CROP',
-      showSpinner: false,
-      androidSpinnerStyle: 'large',
-      iosSpinnerStyle: 'small',
-      spinnerColor: '#F97316'
-    },
-     // App 配置
-    App: {
-      themeColor: '#F97316',
-      // 允许复制到剪贴板
-      copy: {
-        enabled: true
-      }
-    }
-  }
-};
-
-export default config;

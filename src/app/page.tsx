@@ -9,6 +9,7 @@ import PlatformCard from '@/components/PlatformCard';
 import PlatformEditor from '@/components/PlatformEditor';
 import PlatformIcon from '@/components/PlatformIcon';
 import PlatformSettings from '@/components/PlatformSettings';
+import BackButtonHandler from '@/components/BackButtonHandler';
 import { RefreshCw, Clock, Bookmark, User, Settings, Flame as AllIcon, Flame, AlertCircle } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
@@ -437,57 +438,21 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
+      {/* 后退键处理 */}
+      <BackButtonHandler
+        onBack={() => {
+          // 如果平台编辑器打开，关闭编辑器
+          if (showPlatformEditor) {
+            setShowPlatformEditor(false);
+            return true;
+          }
+          // 否则，返回 false 让应用退出
+          return false;
+        }}
+      />
+
       {/* 平台标签栏 - 固定在顶部，适配状态栏（仅在非"我的"界面显示） */}
-      {activeTab !== 'profile' && (
-        <div className="sticky top-0 z-40 bg-white border-b border-gray-100" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-          <div className="px-4 py-2">
-            <div className="flex items-center gap-2">
-            {/* 平台标签 - 横向滚动 */}
-            <div className="flex overflow-x-auto gap-2 py-1 px-1 flex-1 no-scrollbar items-center">
-              {/* 全部平台 */}
-              <button
-                onClick={() => setSelectedPlatform('all')}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-all flex items-center gap-1.5 ${
-                  selectedPlatform === 'all'
-                    ? 'bg-orange-500 text-white shadow-md'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                <AllIcon className="w-4 h-4" />
-                全部
-              </button>
 
-              {/* 平台列表 */}
-              {getVisiblePlatformList().map((platform: any) => (
-                <button
-                  key={platform.key}
-                  onClick={() => setSelectedPlatform(platform.key)}
-                  className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-all flex items-center gap-1.5 ${
-                    selectedPlatform === platform.key
-                      ? 'bg-orange-500 text-white shadow-md'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  <PlatformIcon platform={platform.key} size={16} className={`flex-shrink-0 ${
-                    selectedPlatform === platform.key ? 'text-white' : 'text-current'
-                  }`} />
-                  {platform.name}
-                </button>
-              ))}
-            </div>
-
-            {/* 刷新按钮 */}
-            <button
-              onClick={() => handleRefresh()}
-              disabled={isRefreshing}
-              className="flex-shrink-0 p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <RefreshCw className={`w-4 h-4 text-gray-500 ${isRefreshing ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
-        </div>
-      </div>
-      )}
 
       {/* 平台编辑器 */}
       {showPlatformEditor && (
@@ -674,7 +639,7 @@ export default function Home() {
       </div>
 
       {/* 底部导航栏 */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200/50 shadow-lg">
         <div className="flex items-center justify-around px-2 py-2">
           {[
             { key: 'hot' as TabType, label: '热榜', icon: Flame },
@@ -682,18 +647,35 @@ export default function Home() {
             { key: 'profile' as TabType, label: '我的', icon: User },
           ].map((tab) => {
             const Icon = tab.icon;
+            const isActive = activeTab === tab.key;
             return (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex-1 flex flex-col items-center justify-center gap-1 py-2 px-2 rounded-lg transition-all ${
-                  activeTab === tab.key
-                    ? 'text-orange-500'
-                    : 'text-gray-500 hover:text-gray-700'
+                className={`flex-1 flex flex-col items-center justify-center gap-1 py-2 px-2 rounded-xl transition-all duration-300 relative group ${
+                  isActive
+                    ? 'text-orange-500 bg-gradient-to-t from-orange-50 to-transparent'
+                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
                 }`}
               >
-                <Icon className={`w-6 h-6 ${activeTab === tab.key ? 'fill-orange-500' : ''}`} />
-                <span className="text-xs font-medium">{tab.label}</span>
+                {/* 激活状态指示器 */}
+                {isActive && (
+                  <div className="absolute -top-0.5 w-8 h-1 bg-orange-500 rounded-full shadow-lg shadow-orange-500/50" />
+                )}
+
+                {/* 图标容器 */}
+                <div className={`relative transition-all duration-300 ${isActive ? 'scale-110' : 'scale-100 group-hover:scale-105'}`}>
+                  <Icon className={`w-6 h-6 transition-all duration-300 ${isActive ? 'fill-orange-500 drop-shadow-md' : ''}`} />
+                  {/* 激活状态的光晕效果 */}
+                  {isActive && (
+                    <div className="absolute inset-0 bg-orange-400/20 blur-xl rounded-full animate-pulse" />
+                  )}
+                </div>
+
+                {/* 标签文本 */}
+                <span className="text-xs font-medium transition-all duration-300">
+                  {tab.label}
+                </span>
               </button>
             );
           })}
