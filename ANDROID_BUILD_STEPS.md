@@ -1421,7 +1421,137 @@ cd android
 
 ### 4. Gradle 构建失败
 
-**解决**：
+#### 错误信息 1：无法移动临时工作空间
+
+**错误信息**：
+```
+Execution failed for task ':app:mergeReleaseArtProfile'.
+> A build operation failed.
+      Could not move temporary workspace (C:\Users\xxx\.gradle\caches\8.14.3\transforms\xxx) to immutable location (C:\Users\xxx\.gradle\caches\8.14.3\transforms\xxx)
+```
+
+**原因**：
+- Gradle 缓存损坏或被锁定
+- Gradle daemon 进程未正确关闭
+- 文件被其他程序占用
+
+**解决方案 A：清理 Gradle transforms 缓存（推荐）**
+
+**Windows:**
+```powershell
+cd android
+
+# 1. 停止 Gradle daemon
+.\gradlew.bat --stop
+
+# 2. 等待几秒
+Start-Sleep -Seconds 5
+
+# 3. 清理本地构建
+.\gradlew.bat clean
+
+# 4. 删除 Gradle transforms 缓存（关键）
+Remove-Item -Recurse -Force "$env:USERPROFILE\.gradle\caches\transforms" -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "$env:USERPROFILE\.gradle\caches\8.14.3" -ErrorAction SilentlyContinue
+
+# 5. 删除项目的 .gradle 缓存
+Remove-Item -Recurse -Force .gradle -ErrorAction SilentlyContinue
+
+# 6. 删除 build 目录
+Remove-Item -Recurse -Force build -ErrorAction SilentlyContinue
+
+# 7. 重新构建
+.\gradlew.bat assembleRelease --no-daemon
+```
+
+**macOS / Linux:**
+```bash
+cd android
+
+# 1. 停止 Gradle daemon
+./gradlew --stop
+
+# 2. 等待几秒
+sleep 5
+
+# 3. 清理本地构建
+./gradlew clean
+
+# 4. 删除 Gradle transforms 缓存
+rm -rf ~/.gradle/caches/transforms
+rm -rf ~/.gradle/caches/8.14.3
+
+# 5. 删除项目的 .gradle 缓存
+rm -rf .gradle
+
+# 6. 删除 build 目录
+rm -rf build
+
+# 7. 重新构建
+./gradlew assembleRelease --no-daemon
+```
+
+**解决方案 B：完全清理 Gradle 缓存（如果方案 A 失败）**
+
+**Windows:**
+```powershell
+cd android
+
+# 停止 Gradle daemon
+.\gradlew.bat --stop
+
+# 清理本地构建
+.\gradlew.bat clean
+
+# 删除所有 Gradle 缓存（更彻底）
+Remove-Item -Recurse -Force "$env:USERPROFILE\.gradle\caches" -ErrorAction SilentlyContinue
+
+# 删除项目的 .gradle 目录
+Remove-Item -Recurse -Force .gradle -ErrorAction SilentlyContinue
+
+# 删除 build 目录
+Remove-Item -Recurse -Force build -ErrorAction SilentlyContinue
+
+# 重新构建（Gradle 会重新下载缓存）
+.\gradlew.bat assembleRelease --refresh-dependencies --no-daemon
+```
+
+**macOS / Linux:**
+```bash
+cd android
+
+./gradlew --stop
+./gradlew clean
+rm -rf ~/.gradle/caches
+rm -rf .gradle build
+./gradlew assembleRelease --refresh-dependencies --no-daemon
+```
+
+**解决方案 C：检查并停止占用进程**
+
+**Windows:**
+```powershell
+# 1. 检查是否有 Java 进程在运行
+Get-Process | Where-Object {$_.ProcessName -like "*java*"}
+
+# 2. 检查是否有 Gradle 进程在运行
+Get-Process | Where-Object {$_.ProcessName -like "*gradle*"}
+
+# 3. 关闭 Android Studio 或其他 IDE
+
+# 4. 停止 Gradle daemon
+cd android
+.\gradlew.bat --stop
+
+# 5. 清理并重新构建
+.\gradlew.bat clean
+Remove-Item -Recurse -Force "$env:USERPROFILE\.gradle\caches\transforms" -ErrorAction SilentlyContinue
+.\gradlew.bat assembleRelease --no-daemon
+```
+
+#### 错误信息 2：其他 Gradle 构建失败
+
+**解决方案**：
 
 **Windows:**
 ```powershell
@@ -1431,12 +1561,12 @@ cd android
 .\gradlew.bat clean
 
 # 删除缓存
-Remove-Item -Recurse -Force .gradle
-Remove-Item -Recurse -Force build
-Remove-Item -Recurse -Force "$env:USERPROFILE\.gradle\caches"
+Remove-Item -Recurse -Force .gradle -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force build -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "$env:USERPROFILE\.gradle\caches" -ErrorAction SilentlyContinue
 
 # 重新构建
-.\gradlew.bat assembleDebug
+.\gradlew.bat assembleDebug --no-daemon
 ```
 
 **macOS / Linux:**
@@ -1451,7 +1581,38 @@ rm -rf .gradle build
 rm -rf ~/.gradle/caches/
 
 # 重新构建
-./gradlew assembleDebug
+./gradlew assembleDebug --no-daemon
+```
+
+#### 验证清理是否成功
+
+**Windows:**
+```powershell
+# 检查 transforms 缓存是否已删除
+Test-Path "$env:USERPROFILE\.gradle\caches\transforms"
+# 应该返回 False
+
+# 检查项目的 .gradle 目录是否已删除
+Test-Path .gradle
+# 应该返回 False
+
+# 检查 build 目录是否已删除
+Test-Path build
+# 应该返回 False
+```
+
+**macOS / Linux:**
+```bash
+# 检查缓存是否已删除
+ls ~/.gradle/caches/transforms 2>/dev/null
+# 应该提示不存在
+
+# 检查项目目录
+ls .gradle 2>/dev/null
+# 应该提示不存在
+
+ls build 2>/dev/null
+# 应该提示不存在
 ```
 
 ### 5. 同步时提示 out 目录不存在
