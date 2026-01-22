@@ -420,28 +420,344 @@ npx cap sync android
 
 ### 1. 创建签名配置文件
 
-创建 `android/keystore.properties`：
+#### Windows 环境（详细步骤）
 
-```properties
+**步骤 1.1：确定密钥库文件位置**
+
+```powershell
+# 确认密钥库文件是否在项目根目录
+Test-Path upload-keystore.jks
+
+# 如果密钥库文件在其他位置（如 C:\Keys\），需要记录完整路径
+# 示例：C:\Keys\upload-keystore.jks
+```
+
+**步骤 1.2：创建 keystore.properties 文件**
+
+```powershell
+# 方法 1：使用 PowerShell 创建（推荐）
+@"
 storePassword=你的密钥库密码
 keyPassword=你的密钥密码
 keyAlias=upload
-storeFile=../upload-keystore.jks  # 密钥库文件路径（相对于该配置文件）
+storeFile=../upload-keystore.jks
+"@ | Out-File -Encoding UTF8 android\keystore.properties
+
+# 方法 2：如果密钥库在其他位置
+@"
+storePassword=你的密钥库密码
+keyPassword=你的密钥密码
+keyAlias=upload
+storeFile=C:/Keys/upload-keystore.jks
+"@ | Out-File -Encoding UTF8 android\keystore.properties
+
+# 验证文件是否创建成功
+Test-Path android\keystore.properties
+
+# 查看文件内容
+Get-Content android\keystore.properties
 ```
 
-⚠️ **不要将 `keystore.properties` 提交到 Git！**
+**步骤 1.3：配置 .gitignore**
 
-添加到 `.gitignore`：
-
-**Windows:**
 ```powershell
+# 确保 .gitignore 文件包含以下内容
+# 添加签名相关文件到 .gitignore
+Add-Content .gitignore "# 签名密钥文件"
+Add-Content .gitignore "upload-keystore.jks"
+Add-Content .gitignore "*.jks"
 Add-Content .gitignore "android/keystore.properties"
+
+# 验证 .gitignore 内容
+Get-Content .gitignore | Select-String -Pattern "keystore|jks"
 ```
 
-**macOS / Linux:**
+#### macOS / Linux 环境
+
+**步骤 1.1：确定密钥库文件位置**
+
 ```bash
-echo "android/keystore.properties" >> .gitignore
+# 确认密钥库文件是否在项目根目录
+ls -la upload-keystore.jks
 ```
+
+**步骤 1.2：创建 keystore.properties 文件**
+
+```bash
+# 创建 keystore.properties 文件
+cat > android/keystore.properties << EOF
+storePassword=你的密钥库密码
+keyPassword=你的密钥密码
+keyAlias=upload
+storeFile=../upload-keystore.jks
+EOF
+
+# 验证文件是否创建成功
+ls -la android/keystore.properties
+
+# 查看文件内容
+cat android/keystore.properties
+```
+
+**步骤 1.3：配置 .gitignore**
+
+```bash
+# 确保 .gitignore 文件包含以下内容
+cat >> .gitignore << EOF
+
+# 签名密钥文件
+upload-keystore.jks
+*.jks
+android/keystore.properties
+EOF
+
+# 验证 .gitignore 内容
+grep -E "keystore|jks" .gitignore
+```
+
+### 2. 修改 `android/app/build.gradle`
+
+#### 步骤 2.1：打开 build.gradle 文件
+
+```powershell
+# Windows: 使用记事本或其他编辑器打开
+notepad android\app\build.gradle
+
+# 或使用 VS Code
+code android\app\build.gradle
+```
+
+```bash
+# macOS / Linux: 使用编辑器打开
+code android/app/build.gradle
+# 或
+vim android/app/build.gradle
+```
+
+#### 步骤 2.2：在文件开头添加签名配置读取代码
+
+在 `android {}` 块**之前**添加以下代码：
+
+```gradle
+// 读取签名配置
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+android {
+    // ... 现有的 android 块内容
+```
+
+**完整的配置示例**：
+
+```gradle
+// 读取签名配置
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+android {
+    namespace "com.hotnewsaggregation.news"  // Android 13+ 需要
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.hotnewsaggregation.news"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0"
+    }
+
+    // 添加签名配置
+    signingConfigs {
+        release {
+            if (keystorePropertiesFile.exists()) {
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+                storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+                storePassword keystoreProperties['storePassword']
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            debuggable true
+            minifyEnabled false
+        }
+        release {
+            signingConfig signingConfigs.release  // 使用签名配置
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+```
+
+#### 步骤 2.3：保存文件
+
+修改完成后，保存 `build.gradle` 文件。
+
+### 3. 验证签名配置
+
+#### Windows 环境验证
+
+```powershell
+# 1. 验证 keystore.properties 文件存在
+Test-Path android\keystore.properties
+
+# 2. 验证 keystore.properties 内容
+Get-Content android\keystore.properties
+
+# 3. 验证密钥库文件路径是否正确
+# 如果 storeFile 使用相对路径 ../upload-keystore.jks
+Test-Path upload-keystore.jks
+
+# 如果使用绝对路径，验证该路径
+# Test-Path "C:\Keys\upload-keystore.jks"
+
+# 4. 验证 build.gradle 是否包含签名配置
+Select-String -Path android\app\build.gradle -Pattern "signingConfigs"
+```
+
+#### macOS / Linux 环境验证
+
+```bash
+# 1. 验证 keystore.properties 文件存在
+ls -la android/keystore.properties
+
+# 2. 验证 keystore.properties 内容
+cat android/keystore.properties
+
+# 3. 验证密钥库文件路径是否正确
+ls -la upload-keystore.jks
+
+# 4. 验证 build.gradle 是否包含签名配置
+grep -n "signingConfigs" android/app/build.gradle
+```
+
+### 4. 测试签名配置
+
+在完成配置后，可以尝试构建 Release APK 来验证签名配置是否正确：
+
+#### Windows 测试
+
+```powershell
+cd android
+
+# 清理旧构建
+.\gradlew.bat clean
+
+# 构建 Release APK（会使用签名配置）
+.\gradlew.bat assembleRelease
+
+# 如果成功，输出位置：
+# android\app\build\outputs\apk\release\app-release.apk
+
+# 验证 APK 是否已签名
+.\gradlew.bat assembleRelease --info | Select-String -Pattern "signing"
+```
+
+#### macOS / Linux 测试
+
+```bash
+cd android
+
+# 清理旧构建
+./gradlew clean
+
+# 构建 Release APK（会使用签名配置）
+./gradlew assembleRelease
+
+# 如果成功，输出位置：
+# android/app/build/outputs/apk/release/app-release.apk
+
+# 验证 APK 是否已签名
+./gradlew assembleRelease --info | grep signing
+```
+
+### 5. 常见签名配置问题
+
+#### 问题 1：密钥库文件路径错误
+
+**错误信息**：
+```
+Keystore file 'upload-keystore.jks' not found for signing config 'release'
+```
+
+**解决方法**：
+
+```powershell
+# Windows: 使用绝对路径
+# 编辑 android\keystore.properties
+@"
+storePassword=你的密钥库密码
+keyPassword=你的密钥密码
+keyAlias=upload
+storeFile=C:/Keys/upload-keystore.jks
+"@ | Out-File -Encoding UTF8 android\keystore.properties
+
+# 注意：路径分隔符使用 / 而不是 \
+```
+
+#### 问题 2：密码错误
+
+**错误信息**：
+```
+Keystore file was modified, or password was incorrect
+```
+
+**解决方法**：
+
+```powershell
+# 重新生成密钥库或验证密码是否正确
+keytool -list -v -keystore upload-keystore.jks
+
+# 如果忘记密码，需要重新生成密钥库
+# 注意：重新生成密钥库后，应用包名不能改变，否则用户无法升级
+```
+
+#### 问题 3：keystore.properties 文件被 Git 提交
+
+**解决方法**：
+
+```powershell
+# Windows: 从 Git 历史中移除敏感文件
+git rm --cached android/keystore.properties
+git commit -m "chore: remove keystore.properties from git"
+
+# 确保 .gitignore 包含该文件
+Add-Content .gitignore "android/keystore.properties"
+
+# 验证文件是否被忽略
+git status
+```
+
+### 6. 安全注意事项
+
+⚠️ **重要安全提示**：
+
+1. **永远不要将 keystore.properties 提交到 Git 仓库**
+2. **永远不要将 upload-keystore.jks 提交到 Git 仓库**
+3. **妥善保管密钥库密码和密钥密码**
+4. **建议将密钥库文件存储在安全的位置**（如密码管理器、加密的云存储）
+5. **定期备份密钥库文件**，丢失密钥库将无法更新应用
+6. **团队成员之间共享密钥库时使用安全通道**（如加密文件传输）
+
+**推荐的密钥存储位置**：
+
+- **个人项目**：项目根目录（添加到 .gitignore）
+- **团队项目**：加密的共享云存储（如 Bitwarden、1Password）
 
 ### 2. 修改 `android/app/build.gradle`
 
@@ -1578,13 +1894,115 @@ keytool -genkey -v -keystore upload-keystore.jks `
   -keyalg RSA -keysize 2048 -validity 10000 `
   -alias upload
 
-# 创建签名配置文件
+# 按提示输入密码和信息：
+# - Keystore password: [设置密钥库密码]
+# - Re-enter new password: [再次输入密码]
+# - What is your first and last name?: [输入名称，如 Your Name]
+# - What is the name of your organizational unit?: [部门名称，可回车跳过]
+# - What is the name of your organization?: [组织名称，如 Your Company]
+# - What is the name of your City or Locality?: [城市名称]
+# - What is the name of your State or Province?: [省份名称]
+# - What is the two-letter country code for this unit?: [国家代码，如 CN]
+# - Is CN=xxx correct?: [输入 yes 确认]
+
+# 验证密钥库文件已生成
+Test-Path upload-keystore.jks
+```
+
+#### 3.1 创建签名配置文件
+
+```powershell
+# 创建 keystore.properties 文件
 @"
 storePassword=你的密钥库密码
 keyPassword=你的密钥密码
 keyAlias=upload
 storeFile=../upload-keystore.jks
 "@ | Out-File -Encoding UTF8 android\keystore.properties
+
+# 验证文件已创建
+Test-Path android\keystore.properties
+
+# 查看文件内容
+Get-Content android\keystore.properties
+```
+
+#### 3.2 配置 .gitignore
+
+```powershell
+# 添加签名相关文件到 .gitignore
+Add-Content .gitignore "# 签名密钥文件"
+Add-Content .gitignore "upload-keystore.jks"
+Add-Content .gitignore "*.jks"
+Add-Content .gitignore "android/keystore.properties"
+
+# 验证 .gitignore 内容
+Get-Content .gitignore | Select-String -Pattern "keystore|jks"
+```
+
+#### 3.3 修改 build.gradle
+
+```powershell
+# 使用编辑器打开 build.gradle
+notepad android\app\build.gradle
+
+# 或使用 VS Code
+code android\app\build.gradle
+
+# 在文件开头添加签名配置读取代码（在 android {} 块之前）：
+"""
+// 读取签名配置
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+"""
+
+# 在 android {} 块内添加 signingConfigs 配置：
+"""
+signingConfigs {
+    release {
+        if (keystorePropertiesFile.exists()) {
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+            storePassword keystoreProperties['storePassword']
+        }
+    }
+}
+"""
+
+# 在 buildTypes.release 中添加签名配置：
+"""
+buildTypes {
+    debug {
+        debuggable true
+        minifyEnabled false
+    }
+    release {
+        signingConfig signingConfigs.release  // 添加这一行
+        minifyEnabled true
+        shrinkResources true
+        proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+    }
+}
+"""
+
+# 保存文件
+```
+
+#### 3.4 验证签名配置
+
+```powershell
+# 验证 keystore.properties 文件存在
+Test-Path android\keystore.properties
+
+# 验证密钥库文件存在
+Test-Path upload-keystore.jks
+
+# 验证 build.gradle 包含签名配置
+Select-String -Path android\app\build.gradle -Pattern "signingConfigs"
 ```
 
 #### 4. 构建项目
