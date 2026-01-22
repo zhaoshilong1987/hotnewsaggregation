@@ -6,8 +6,8 @@
 
 | 工具 | 文件路径 | 大小 | 说明 |
 |------|---------|------|------|
-| Android SDK | `/tmp/android-sdk-tools.tar.gz` | 420MB | 已压缩，包含 Platform Tools, Build Tools 34.0.0, Platform 34 |
-| Gradle | `/tmp/gradle-8.11.1-all.zip` | 220MB | Gradle 构建工具 |
+| Android SDK | `/workspace/projects/android-tools/android-sdk-tools.tar.gz` | 420MB | 已压缩，包含 Platform Tools, Build Tools 34.0.0, Platform 34 |
+| Gradle | `/workspace/projects/android-tools/gradle-8.11.1-all.zip` | 220MB | Gradle 构建工具 |
 | Java 21 | 系统自带 | - | Ubuntu 系统自带，无需备份 |
 
 ## 🚀 快速恢复步骤
@@ -31,7 +31,7 @@ ls -la /opt/android-sdk/
 ```bash
 # 1. 恢复 Android SDK
 cd /opt
-tar -xzf /tmp/android-sdk-tools.tar.gz
+tar -xzf /workspace/projects/android-tools/android-sdk-tools.tar.gz
 
 # 2. 配置环境变量
 cat >> ~/.bashrc << 'EOF'

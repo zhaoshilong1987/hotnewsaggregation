@@ -6,8 +6,8 @@
 
 | 文件名 | 位置 | 大小 | 类型 | 说明 |
 |--------|------|------|------|------|
-| `android-sdk-tools.tar.gz` | `/tmp/` | 420MB | 压缩包 | Android SDK 完整备份（含 Platform Tools, Build Tools, Platform 34） |
-| `gradle-8.11.1-all.zip` | `/tmp/` | 220MB | ZIP | Gradle 构建工具 |
+| `android-sdk-tools.tar.gz` | `/workspace/projects/android-tools/` | 420MB | 压缩包 | Android SDK 完整备份（含 Platform Tools, Build Tools, Platform 34） |
+| `gradle-8.11.1-all.zip` | `/workspace/projects/android-tools/` | 220MB | ZIP | Gradle 构建工具 |
 
 ## 📄 文档和脚本位置
 
@@ -38,7 +38,7 @@ ls -la /opt/android-sdk/
 ```bash
 # 1. 解压 Android SDK
 cd /opt
-tar -xzf /tmp/android-sdk-tools.tar.gz
+tar -xzf /workspace/projects/android-tools/android-sdk-tools.tar.gz
 
 # 2. 设置环境变量
 export ANDROID_HOME=/opt/android-sdk

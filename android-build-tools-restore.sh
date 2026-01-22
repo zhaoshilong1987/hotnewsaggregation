@@ -9,13 +9,16 @@ echo "  Android 构建工具恢复脚本"
 echo "=========================================="
 
 # 1. 恢复 Android SDK
-if [ -f /tmp/android-sdk-tools.tar.gz ]; then
+TOOLS_DIR="/workspace/projects/android-tools"
+SDK_TAR="$TOOLS_DIR/android-sdk-tools.tar.gz"
+
+if [ -f "$SDK_TAR" ]; then
     echo "正在恢复 Android SDK..."
     cd /opt
-    tar -xzf /tmp/android-sdk-tools.tar.gz
+    tar -xzf "$SDK_TAR"
     echo "✓ Android SDK 已恢复到 /opt/android-sdk"
 else
-    echo "✗ 未找到 Android SDK 压缩包: /tmp/android-sdk-tools.tar.gz"
+    echo "✗ 未找到 Android SDK 压缩包: $SDK_TAR"
     exit 1
 fi
 
