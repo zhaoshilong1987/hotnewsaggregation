@@ -1271,33 +1271,152 @@ echo "sdk.dir=/path/to/android/sdk" > android/local.properties
 
 ### 3. 构建时提示 Java 版本不兼容
 
-**解决**：
+#### 错误信息 1：无效的源发行版：21
+
+**错误信息**：
+```
+Execution failed for task ':capacitor-android:compileReleaseJavaWithJavac'.
+> Java compilation initialization error
+    错误: 无效的源发行版：21
+```
+
+**原因**：
+- Capacitor Android 插件（版本 8.x）要求使用 Java 21
+- 当前系统安装的 Java 版本不是 21（通常是 Java 17 或更低版本）
+
+**解决方案 A：升级到 Java 21（推荐）**
 
 **Windows:**
 ```powershell
-# 检查 Java 版本
+# 1. 检查当前 Java 版本
+java -version
+echo $env:JAVA_HOME
+
+# 2. 使用 Chocolatey 安装 Java 21（需要管理员权限）
+choco install openjdk21
+
+# 3. 验证安装
 java -version
 
-# 切换到 JDK 17 或更高版本
-# 方法 1：更新系统环境变量 JAVA_HOME
-# 方法 2：在 gradle.properties 中指定
-"org.gradle.java.home=C:\\Program Files\\Java\\jdk-17" | Out-File -Encoding UTF8 -Append android/gradle.properties
+# 4. 如果需要，临时设置环境变量（当前会话）
+$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21.x.xx-hotspot"
+$env:Path = "$env:JAVA_HOME\bin;$env:Path"
 
-# 方法 3：使用 Gradle JVM（Android Studio）
-# File -> Settings -> Build, Execution, Deployment -> Build Tools -> Gradle
-# Gradle JDK: 选择 JDK 17
+# 5. 重新构建
+cd android
+.\gradlew.bat clean
+.\gradlew.bat assembleRelease
+```
+
+**手动下载安装（Windows）**：
+```
+1. 下载 Java 21（LTS）
+   https://www.oracle.com/java/technologies/downloads/
+   选择 Java 21 - Windows x64 Installer
+
+2. 安装后配置环境变量
+   JAVA_HOME = C:\Program Files\Eclipse Adoptium\jdk-21.x.xx-hotspot
+   Path 添加 %JAVA_HOME%\bin
+
+3. 重启 PowerShell 或 CMD
+
+4. 验证安装
+   java -version
 ```
 
 **macOS / Linux:**
 ```bash
-# 检查 Java 版本
+# 1. 检查当前 Java 版本
+java -version
+echo $JAVA_HOME
+
+# 2. 安装 Java 21
+# macOS:
+brew install openjdk@21
+
+# Ubuntu/Debian:
+sudo apt update
+sudo apt install openjdk-21-jdk
+
+# 3. 设置环境变量
+export JAVA_HOME=/path/to/jdk21
+
+# 4. 验证安装
 java -version
 
-# 切换到 JDK 17 或更高版本
-export JAVA_HOME=/path/to/jdk17
+# 5. 重新构建
+cd android
+./gradlew clean
+./gradlew assembleRelease
+```
 
-# 或在 gradle.properties 中指定
+**解决方案 B：修改 Gradle 配置使用 Java 17（备选）**
+
+如果不便升级 Java 21，可以修改配置使用 Java 17：
+
+**Windows:**
+```powershell
+# 1. 修改 android/app/build.gradle
+notepad android\app\build.gradle
+
+# 2. 找到 compileOptions 部分，确保设置为 Java 17
+# sourceCompatibility JavaVersion.VERSION_17
+# targetCompatibility JavaVersion.VERSION_17
+
+# 3. 在 gradle.properties 中指定 Java 17
+"org.gradle.java.home=C:\\Program Files\\Java\\jdk-17" | Out-File -Encoding UTF8 -Append android/gradle.properties
+
+# 4. 重新构建
+cd android
+.\gradlew.bat clean
+.\gradlew.bat assembleRelease
+```
+
+**macOS / Linux:**
+```bash
+# 1. 修改 android/app/build.gradle
+vim android/app/build.gradle
+
+# 2. 确保 compileOptions 设置为 Java 17
+# sourceCompatibility JavaVersion.VERSION_17
+# targetCompatibility JavaVersion.VERSION_17
+
+# 3. 在 gradle.properties 中指定
 echo "org.gradle.java.home=/path/to/jdk17" >> android/gradle.properties
+
+# 4. 重新构建
+cd android
+./gradlew clean
+./gradlew assembleRelease
+```
+
+#### 错误信息 2：其他 Java 版本问题
+
+**错误信息**：
+```
+Unsupported class file major version
+```
+
+**解决方法**：
+```powershell
+# Windows: 检查并更新 Java 版本
+java -version
+
+# 如果版本过低，升级到 Java 21
+choco install openjdk21
+
+# 或指定 Gradle 使用特定 Java 版本
+"org.gradle.java.home=C:\\Program Files\\Java\\jdk-21" | Out-File -Encoding UTF8 -Append android/gradle.properties
+```
+
+**验证 Java 版本配置**：
+```powershell
+# 查看当前使用的 Java 版本
+cd android
+.\gradlew.bat --version
+
+# 查看详细的 Java 版本信息
+.\gradlew.bat properties --console=plain | Select-String -Pattern "java"
 ```
 
 ### 4. Gradle 构建失败
