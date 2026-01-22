@@ -36,6 +36,8 @@ export default function Home() {
   const touchStartY = useRef(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const platformScrollRef = useRef<HTMLDivElement>(null);
+  const platformTouchStartX = useRef(0);
 
   // 初始化平台配置
   useEffect(() => {
@@ -333,6 +335,43 @@ export default function Home() {
     }
   };
 
+  // 平台标签滑动处理
+  const handlePlatformTouchStart = (e: React.TouchEvent) => {
+    platformTouchStartX.current = e.touches[0].clientX;
+  };
+
+  const handlePlatformTouchEnd = (e: React.TouchEvent) => {
+    const touchEndX = e.changedTouches[0].clientX;
+    const diffX = touchEndX - platformTouchStartX.current;
+
+    // 滑动阈值
+    const threshold = 50;
+
+    if (selectedPlatform !== 'all') {
+      const currentIndex = visiblePlatforms.indexOf(selectedPlatform);
+
+      if (diffX > threshold) {
+        // 向右滑动，切换到上一个平台
+        if (currentIndex > 0) {
+          setSelectedPlatform(visiblePlatforms[currentIndex - 1]);
+        } else {
+          // 已经是第一个，切换到全部
+          setSelectedPlatform('all');
+        }
+      } else if (diffX < -threshold) {
+        // 向左滑动，切换到下一个平台
+        if (currentIndex < visiblePlatforms.length - 1) {
+          setSelectedPlatform(visiblePlatforms[currentIndex + 1]);
+        }
+      }
+    } else {
+      // 当前是全部，向右滑动无效，向左滑动切换到第一个平台
+      if (diffX < -threshold && visiblePlatforms.length > 0) {
+        setSelectedPlatform(visiblePlatforms[0]);
+      }
+    }
+  };
+
   const newsList = activeTab === 'hot' ? hotNews :
                   activeTab === 'latest' ? latestNews :
                   bookmarks;
@@ -462,7 +501,12 @@ export default function Home() {
           className="fixed top-0 left-0 right-0 z-50 bg-orange-500 shadow-md"
           style={{ paddingTop: 'max(0px, env(safe-area-inset-top) - 8px)' }}
         >
-          <div className="flex items-center gap-2 px-3 py-2">
+          <div
+            ref={platformScrollRef}
+            className="flex items-center gap-2 px-3 py-2"
+            onTouchStart={handlePlatformTouchStart}
+            onTouchEnd={handlePlatformTouchEnd}
+          >
             {/* 全部按钮 */}
             <button
               onClick={() => setSelectedPlatform('all')}
@@ -644,7 +688,7 @@ export default function Home() {
             </div>
           ) : groupedNews && groupedNews.length > 0 ? (
             // 全部标签：显示平台卡片网格布局
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {groupedNews.map((item) => (
                 <PlatformCard
                   key={item.platform!.key}
