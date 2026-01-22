@@ -96,17 +96,7 @@ export default function PlatformCard({
         )}
       </div>
 
-      {/* 底部渐变遮罩 */}
-      {!isExpanded && hasMore && (
-        <div className="px-3 pb-2">
-          <button
-            onClick={handleExpand}
-            className="w-full py-2 text-sm text-gray-500 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            还有 {news.length - displayCount} 条内容
-          </button>
-        </div>
-      )}
+
     </div>
   );
 }

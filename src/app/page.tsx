@@ -580,7 +580,7 @@ export default function Home() {
         )}
 
         {/* 新闻列表 */}
-        <div className="px-4 py-3 space-y-3">
+        <div className={`px-4 space-y-3 ${activeTab !== 'profile' ? 'pt-20' : 'py-3'}`}>
           {activeTab === 'profile' ? (
             <div className="space-y-4">
               {/* 个人信息卡片 */}
