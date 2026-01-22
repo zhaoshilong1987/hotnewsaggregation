@@ -435,21 +435,14 @@ Test-Path upload-keystore.jks
 **步骤 1.2：创建 keystore.properties 文件**
 
 ```powershell
-# 方法 1：使用 PowerShell 创建（推荐）
-@"
-storePassword=你的密钥库密码
-keyPassword=你的密钥密码
-keyAlias=upload
-storeFile=../upload-keystore.jks
-"@ | Out-File -Encoding UTF8 android\keystore.properties
+# 方法 1：逐行添加（推荐，最简单不易出错）
+"storePassword=你的密钥库密码" | Out-File -Encoding UTF8 android\keystore.properties
+"keyPassword=你的密钥密码" | Out-File -Encoding UTF8 -Append android\keystore.properties
+"keyAlias=upload" | Out-File -Encoding UTF8 -Append android\keystore.properties
+"storeFile=../upload-keystore.jks" | Out-File -Encoding UTF8 -Append android\keystore.properties
 
-# 方法 2：如果密钥库在其他位置
-@"
-storePassword=你的密钥库密码
-keyPassword=你的密钥密码
-keyAlias=upload
-storeFile=C:/Keys/upload-keystore.jks
-"@ | Out-File -Encoding UTF8 android\keystore.properties
+# 如果密钥库在其他位置（如 D:\Keys\），使用完整路径：
+"storeFile=D:/Keys/upload-keystore.jks" | Out-File -Encoding UTF8 -Append android\keystore.properties
 
 # 验证文件是否创建成功
 Test-Path android\keystore.properties
@@ -457,6 +450,38 @@ Test-Path android\keystore.properties
 # 查看文件内容
 Get-Content android\keystore.properties
 ```
+
+**方法 2：使用 Set-Content（简洁）**
+
+```powershell
+Set-Content -Path android\keystore.properties -Encoding UTF8 -Value @"
+storePassword=你的密钥库密码
+keyPassword=你的密钥密码
+keyAlias=upload
+storeFile=../upload-keystore.jks
+"@
+
+# 验证文件内容
+Get-Content android\keystore.properties
+```
+
+**方法 3：用记事本手动编辑（最直观）**
+
+```powershell
+# 用记事本打开文件
+notepad android\keystore.properties
+
+# 然后手动输入以下内容（每行一个属性）：
+# storePassword=你的密钥库密码
+# keyPassword=你的密钥密码
+# keyAlias=upload
+# storeFile=../upload-keystore.jks
+```
+
+**注意事项**：
+- ⚠️ `@"` 和 `"@` 必须各占一行，内容在中间
+- ⚠️ 路径建议使用 `/` 而不是 `\`（避免转义问题）
+- ⚠️ 确保每行一个属性，不要在同一行写多个属性
 
 **步骤 1.3：配置 .gitignore**
 
@@ -699,13 +724,14 @@ Keystore file 'upload-keystore.jks' not found for signing config 'release'
 
 ```powershell
 # Windows: 使用绝对路径
-# 编辑 android\keystore.properties
-@"
-storePassword=你的密钥库密码
-keyPassword=你的密钥密码
-keyAlias=upload
-storeFile=C:/Keys/upload-keystore.jks
-"@ | Out-File -Encoding UTF8 android\keystore.properties
+# 编辑 android\keystore.properties（逐行添加）
+"storePassword=你的密钥库密码" | Set-Content -Path android\keystore.properties -Encoding UTF8
+"keyPassword=你的密钥密码" | Add-Content -Path android\keystore.properties -Encoding UTF8
+"keyAlias=upload" | Add-Content -Path android\keystore.properties -Encoding UTF8
+"storeFile=C:/Keys/upload-keystore.jks" | Add-Content -Path android\keystore.properties -Encoding UTF8
+
+# 验证修改
+Get-Content android\keystore.properties
 
 # 注意：路径分隔符使用 / 而不是 \
 ```
@@ -1912,13 +1938,11 @@ Test-Path upload-keystore.jks
 #### 3.1 创建签名配置文件
 
 ```powershell
-# 创建 keystore.properties 文件
-@"
-storePassword=你的密钥库密码
-keyPassword=你的密钥密码
-keyAlias=upload
-storeFile=../upload-keystore.jks
-"@ | Out-File -Encoding UTF8 android\keystore.properties
+# 方法 1：逐行添加（推荐，最简单不易出错）
+"storePassword=你的密钥库密码" | Out-File -Encoding UTF8 android\keystore.properties
+"keyPassword=你的密钥密码" | Out-File -Encoding UTF8 -Append android\keystore.properties
+"keyAlias=upload" | Out-File -Encoding UTF8 -Append android\keystore.properties
+"storeFile=../upload-keystore.jks" | Out-File -Encoding UTF8 -Append android\keystore.properties
 
 # 验证文件已创建
 Test-Path android\keystore.properties
