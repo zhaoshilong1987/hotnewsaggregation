@@ -454,46 +454,40 @@ export default function Home() {
       {/* 平台标签栏 - 固定在顶部，适配状态栏（仅在非"我的"界面显示） */}
       {activeTab !== 'profile' && (
         <div
-          className="fixed top-0 left-0 right-0 z-50"
-          style={{
-            paddingTop: 'max(0px, env(safe-area-inset-top) - 8px)',
-            background: 'linear-gradient(180deg, rgba(249, 115, 22, 0.95) 0%, rgba(249, 115, 22, 0.85) 100%)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            boxShadow: '0 4px 20px rgba(249, 115, 22, 0.3)',
-          }}
+          className="fixed top-0 left-0 right-0 z-50 bg-orange-500 shadow-md"
+          style={{ paddingTop: 'max(0px, env(safe-area-inset-top) - 8px)' }}
         >
           <div className="flex items-center gap-2 px-3 py-2">
             {/* 全部按钮 */}
             <button
               onClick={() => setSelectedPlatform('all')}
-              className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-300 ${
+              className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all ${
                 selectedPlatform === 'all'
-                  ? 'bg-white text-orange-500 shadow-lg shadow-orange-500/30 scale-105'
+                  ? 'bg-white text-orange-500'
                   : 'bg-white/20 text-white hover:bg-white/30'
               }`}
             >
-              <AllIcon className={`w-4 h-4 ${selectedPlatform === 'all' ? 'animate-pulse' : ''}`} />
+              <AllIcon className="w-4 h-4" />
               <span className="text-sm font-medium whitespace-nowrap">全部</span>
             </button>
 
             {/* 平台标签列表 */}
             <div className="flex gap-2 overflow-x-auto scrollbar-hide flex-1">
-              {visiblePlatforms.map((platformId) => {
-                const platform = PLATFORMS.find((p) => p.id === platformId);
+              {visiblePlatforms.map((platformKey) => {
+                const platform = PLATFORMS.find((p) => p.key === platformKey);
                 if (!platform) return null;
 
                 return (
                   <button
-                    key={platformId}
-                    onClick={() => setSelectedPlatform(platformId)}
-                    className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-300 ${
-                      selectedPlatform === platformId
-                        ? 'bg-white text-orange-500 shadow-lg shadow-orange-500/30 scale-105'
+                    key={platformKey}
+                    onClick={() => setSelectedPlatform(platformKey)}
+                    className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all ${
+                      selectedPlatform === platformKey
+                        ? 'bg-white text-orange-500'
                         : 'bg-white/20 text-white hover:bg-white/30'
                     }`}
                   >
-                    <PlatformIcon platformId={platformId} size={16} />
+                    <PlatformIcon platformId={platformKey} size={16} />
                     <span className="text-sm font-medium whitespace-nowrap">{platform.name}</span>
                   </button>
                 );
@@ -503,7 +497,7 @@ export default function Home() {
             {/* 设置按钮 */}
             <button
               onClick={() => setShowPlatformEditor(true)}
-              className="flex-shrink-0 p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-all duration-300 hover:scale-110 active:scale-95"
+              className="flex-shrink-0 p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-all"
             >
               <Settings className="w-4 h-4" />
             </button>
