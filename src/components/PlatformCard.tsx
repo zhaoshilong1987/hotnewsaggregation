@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import NewsCard from './NewsCard';
 import PlatformIcon from './PlatformIcon';
 import type { NewsItem, PlatformInfo } from '@/types/news';
@@ -17,7 +17,6 @@ export default function PlatformCard({
   limit = 3,
 }: PlatformCardProps) {
   const [displayCount, setDisplayCount] = useState(limit);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   // 平台变化时重置显示数量
   useEffect(() => {
@@ -26,19 +25,12 @@ export default function PlatformCard({
 
   const displayedNews = news.slice(0, displayCount);
 
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const target = e.target as HTMLDivElement;
-    // 滚动到底部附近时加载更多
-    if (
-      target.scrollTop + target.clientHeight >= target.scrollHeight - 50 &&
-      displayCount < news.length
-    ) {
-      setDisplayCount(prev => Math.min(prev + 5, news.length));
-    }
+  const handleLoadMore = () => {
+    setDisplayCount(prev => Math.min(prev + 5, news.length));
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full hover-show-scrollbar">
+    <div className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
       {/* 卡片头部 */}
       <div className="px-3 py-2 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-blue-50 to-white flex-shrink-0">
         <div className="flex items-center gap-2">
@@ -50,11 +42,9 @@ export default function PlatformCard({
         </div>
       </div>
 
-      {/* 新闻列表 - 支持滚动查看更多 */}
+      {/* 新闻列表 */}
       <div
-        ref={scrollRef}
-        onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-3 py-2 space-y-2 scrollbar-auto-hide"
+        className="flex-1 overflow-y-auto px-3 py-2 space-y-2 scrollbar-hide"
         style={{ maxHeight: '300px', minHeight: '200px' }}
       >
         {displayedNews.map((item, index) => (
@@ -66,11 +56,14 @@ export default function PlatformCard({
           />
         ))}
 
-        {/* 如果有更多内容，显示提示 */}
+        {/* 如果有更多内容，显示加载更多按钮 */}
         {displayedNews.length < news.length && (
-          <div className="text-center py-2 text-xs text-gray-400">
-            下滑加载更多...
-          </div>
+          <button
+            onClick={handleLoadMore}
+            className="w-full text-center py-2 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+          >
+            加载更多
+          </button>
         )}
       </div>
     </div>
