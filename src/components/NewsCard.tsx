@@ -219,11 +219,11 @@ export default function NewsCard({ news, platform, rank, onRemove, onBookmark, s
             </div>
           )}
 
-          {/* 排名数字（仅在热榜模式且紧凑模式下显示） */}
-          {isHotList && compact && rank && (
-            <div className="flex-shrink-0 w-6 flex flex-col items-center justify-center">
+          {/* 排名数字（仅在热榜模式下显示） */}
+          {isHotList && rank && (
+            <div className={`flex-shrink-0 flex flex-col items-center justify-center ${compact ? 'w-6' : 'w-8'}`}>
               <span
-                className={`text-lg font-bold ${
+                className={`font-bold ${compact ? 'text-lg' : 'text-xl'} ${
                   rank === 1
                     ? 'text-red-500'
                     : rank === 2
