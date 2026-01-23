@@ -10,10 +10,10 @@ import PlatformEditor from '@/components/PlatformEditor';
 import PlatformIcon from '@/components/PlatformIcon';
 import PlatformSettings from '@/components/PlatformSettings';
 import BackButtonHandler from '@/components/BackButtonHandler';
-import { RefreshCw, Clock, Bookmark, User, Settings, Flame as AllIcon, Flame, AlertCircle } from 'lucide-react';
+import { RefreshCw, Clock, Bookmark, User, Settings, Flame as AllIcon, Flame, AlertCircle, MessageSquare } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
-type TabType = 'hot' | 'latest' | 'favorites' | 'profile';
+type TabType = 'hot' | 'latest' | 'favorites' | 'messages' | 'profile';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<TabType>('hot');
@@ -495,8 +495,8 @@ export default function Home() {
         }}
       />
 
-      {/* 平台标签栏 - 固定在顶部，适配状态栏（仅在非"我的"界面显示） */}
-      {activeTab !== 'profile' && (
+      {/* 平台标签栏 - 固定在顶部，适配状态栏（仅在非"我的"和"消息"界面显示） */}
+      {activeTab !== 'profile' && activeTab !== 'messages' && (
         <div
           className="fixed top-0 left-0 right-0 z-50 bg-orange-500 shadow-md"
           style={{ paddingTop: 'max(0px, env(safe-area-inset-top) - 8px)' }}
@@ -543,12 +543,13 @@ export default function Home() {
               })}
             </div>
 
-            {/* 设置按钮 */}
+            {/* 刷新按钮 */}
             <button
-              onClick={() => setShowPlatformEditor(true)}
-              className="flex-shrink-0 p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-all"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="flex-shrink-0 p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-all disabled:opacity-50"
             >
-              <Settings className="w-4 h-4" />
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             </button>
           </div>
         </div>
@@ -580,8 +581,16 @@ export default function Home() {
         )}
 
         {/* 新闻列表 */}
-        <div className={`px-4 space-y-3 ${activeTab !== 'profile' ? 'pt-20' : 'py-3'}`}>
-          {activeTab === 'profile' ? (
+        <div className={`px-4 space-y-3 ${activeTab !== 'profile' && activeTab !== 'messages' ? 'pt-20' : 'py-3'}`}>
+          {activeTab === 'messages' ? (
+            <div className="space-y-4">
+              <div className="text-center py-12 text-gray-500">
+                <MessageSquare className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                <h2 className="text-xl font-semibold mb-2">消息中心</h2>
+                <p className="text-sm">暂无新消息</p>
+              </div>
+            </div>
+          ) : activeTab === 'profile' ? (
             <div className="space-y-4">
               {/* 个人信息卡片 */}
               <div className="bg-white rounded-xl p-6 shadow-sm">
@@ -740,10 +749,11 @@ export default function Home() {
 
       {/* 底部导航栏 */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200/50 shadow-lg">
-        <div className="flex items-center justify-around px-2 py-2">
+        <div className="mx-auto max-w-md flex items-center justify-around px-4 py-2">
           {[
             { key: 'hot' as TabType, label: '热榜', icon: Flame },
             { key: 'favorites' as TabType, label: '收藏', icon: Bookmark },
+            { key: 'messages' as TabType, label: '消息', icon: MessageSquare },
             { key: 'profile' as TabType, label: '我的', icon: User },
           ].map((tab) => {
             const Icon = tab.icon;
