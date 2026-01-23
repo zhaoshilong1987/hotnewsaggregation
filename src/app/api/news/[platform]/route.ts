@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getMockNews, getLatestNews } from '@/data/mockData';
+import { getMockNews, getRealtimeNews } from '@/data/mockData';
 import { PLATFORMS_CONFIG, PlatformConfig } from '@/lib/config';
 
 export const runtime = 'edge';
@@ -44,7 +44,7 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeout = 500
   }
 }
 
-async function fetchFromExternalApi(platformKey: string, type: 'hot' | 'latest' = 'hot'): Promise<NewsItem[]> {
+async function fetchFromExternalApi(platformKey: string, type: 'hot' | 'realtime' = 'hot'): Promise<NewsItem[]> {
   try {
     const platformConfig = getPlatformConfig(platformKey);
 
@@ -54,8 +54,8 @@ async function fetchFromExternalApi(platformKey: string, type: 'hot' | 'latest' 
 
     // 根据类型选择 API URL
     let apiUrl: string;
-    if (type === 'latest' && platformConfig.latestApiUrl) {
-      apiUrl = platformConfig.latestApiUrl;
+    if (type === 'realtime' && platformConfig.realtimeApiUrl) {
+      apiUrl = platformConfig.realtimeApiUrl;
     } else {
       apiUrl = (platformConfig as any).apiUrl;
     }
@@ -147,7 +147,7 @@ export async function GET(
 
   // 从 URL 中获取查询参数
   const { searchParams } = new URL(request.url);
-  const type = (searchParams.get('type') as 'hot' | 'latest') || 'hot';
+  const type = (searchParams.get('type') as 'hot' | 'realtime') || 'hot';
 
   if (!platform) {
     return NextResponse.json({
@@ -181,7 +181,7 @@ export async function GET(
         } else {
           console.error(`Failed to fetch platform ${allPlatforms[index]}:`, result.reason);
           // 如果某个平台失败，使用 mock 数据
-          const mockData = type === 'latest' ? getLatestNews(allPlatforms[index], 20) : getMockNews(allPlatforms[index]);
+          const mockData = type === 'realtime' ? getRealtimeNews(allPlatforms[index], 20) : getMockNews(allPlatforms[index]);
           allNews.push(...mockData);
         }
       });
@@ -207,7 +207,7 @@ export async function GET(
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
     // 降级到 mock 数据
-    const mockData = type === 'latest' ? getLatestNews(platform, 20) : getMockNews(platform);
+    const mockData = type === 'realtime' ? getRealtimeNews(platform, 20) : getMockNews(platform);
 
     return NextResponse.json({
       success: true,

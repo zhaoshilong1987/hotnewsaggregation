@@ -225,7 +225,7 @@ export default function PlatformSettings() {
                           ) : (
                             <RefreshCw className="w-4 h-4" />
                           )}
-                          测试最新
+                          测试实时
                         </Button>
                         {testResult?.platform === platform.key && testResult && (
                           <div className={`text-xs ${testResult.success ? 'text-green-600' : 'text-red-600'}`}>
@@ -253,7 +253,7 @@ export default function PlatformSettings() {
                       {/* 最新 API */}
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          <Label className="text-sm font-semibold text-blue-600">📰 最新 API</Label>
+                          <Label className="text-sm font-semibold text-blue-600">📰 实时 API</Label>
                         </div>
                         <div className="bg-blue-50 border border-blue-200 rounded p-2">
                           <div className="text-xs text-gray-600 font-mono break-all">
@@ -373,11 +373,11 @@ function PlatformForm({
 
       {/* 最新 API */}
       <div className="space-y-2">
-        <Label htmlFor="latestApiUrl" className="text-blue-600 font-semibold">📰 最新 API 地址</Label>
+        <Label htmlFor="realtimeApiUrl" className="text-blue-600 font-semibold">📰 实时 API 地址</Label>
         <Input
-          id="latestApiUrl"
-          value={formData.latestApiUrl || ''}
-          onChange={(e) => setFormData({ ...formData, latestApiUrl: e.target.value })}
+          id="realtimeApiUrl"
+          value={formData.realtimeApiUrl || ''}
+          onChange={(e) => setFormData({ ...formData, realtimeApiUrl: e.target.value })}
           placeholder="https://..."
         />
         <p className="text-xs text-gray-500">用于获取最新资讯数据</p>

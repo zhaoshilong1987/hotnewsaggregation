@@ -567,7 +567,7 @@ export function searchNews(keyword: string): NewsItem[] {
   );
 }
 
-export function getLatestNews(platform?: string, limit: number = 20): NewsItem[] {
+export function getRealtimeNews(platform?: string, limit: number = 20): NewsItem[] {
   let newsData = mockNewsData;
 
   if (platform && platform !== 'all') {

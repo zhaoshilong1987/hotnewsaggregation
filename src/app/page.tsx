@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { PLATFORMS } from '@/types/news';
-import { getMockNews, getLatestNews } from '@/data/mockData';
+import { getMockNews, getRealtimeNews } from '@/data/mockData';
 import NewsCard from '@/components/NewsCard';
 import PlatformCard from '@/components/PlatformCard';
 import PlatformEditor from '@/components/PlatformEditor';
@@ -13,7 +13,7 @@ import BackButtonHandler from '@/components/BackButtonHandler';
 import { RefreshCw, Clock, Bookmark, User, Settings, Flame as AllIcon, Flame, AlertCircle, MessageSquare, Menu, Newspaper } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
-type TabType = 'hot' | 'latest' | 'favorites' | 'messages' | 'profile';
+type TabType = 'hot' | 'realtime' | 'favorites' | 'messages' | 'profile';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<TabType>('hot');
@@ -21,7 +21,7 @@ export default function Home() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
   const [isPulling, setIsPulling] = useState(false);
-  const [latestNews, setLatestNews] = useState<any[]>([]);
+  const [realtimeNews, setRealtimeNews] = useState<any[]>([]);
   const [bookmarks, setBookmarks] = useState<any[]>([]);
   const [showPlatformEditor, setShowPlatformEditor] = useState(false);
   const [visiblePlatforms, setVisiblePlatforms] = useState<string[]>([]);
@@ -136,7 +136,7 @@ export default function Home() {
       (entries) => {
         if (entries[0].isIntersecting && !isLoadingMore) {
           const currentList = activeTab === 'hot' ? hotNews :
-                            activeTab === 'latest' ? latestNews :
+                            activeTab === 'realtime' ? realtimeNews :
                             bookmarks;
 
           // 如果还有更多数据未显示
@@ -166,7 +166,7 @@ export default function Home() {
         loadMoreObserver.unobserve(loadMoreRef.current);
       }
     };
-  }, [activeTab, displayCount, isLoadingMore, hotNews, latestNews, bookmarks]);
+  }, [activeTab, displayCount, isLoadingMore, hotNews, realtimeNews, bookmarks]);
 
   // 加载收藏
   useEffect(() => {
@@ -189,8 +189,8 @@ export default function Home() {
 
   // 加载最新资讯
   useEffect(() => {
-    if (activeTab === 'latest' && platformsLoaded) {
-      fetchLatestNews();
+    if (activeTab === 'realtime' && platformsLoaded) {
+      fetchRealtimeNews();
     }
   }, [activeTab, selectedPlatform, platformsLoaded]);
 
@@ -307,14 +307,14 @@ export default function Home() {
 
   const groupedNews = getNewsByPlatform();
 
-  // 获取最新资讯按平台分组的数据（用于最新全部标签）
-  const getLatestNewsByPlatform = () => {
-    if (selectedPlatform !== 'all' || activeTab !== 'latest') {
+  // 获取实时资讯按平台分组的数据（用于实时全部标签）
+  const getRealtimeNewsByPlatform = () => {
+    if (selectedPlatform !== 'all' || activeTab !== 'realtime') {
       return null;
     }
 
     // 按平台分组
-    const grouped = latestNews.reduce((acc: Record<string, any[]>, item) => {
+    const grouped = realtimeNews.reduce((acc: Record<string, any[]>, item) => {
       const source = item.source;
       if (!acc[source]) {
         acc[source] = [];
@@ -323,7 +323,7 @@ export default function Home() {
       return acc;
     }, {});
 
-    console.log('getLatestNewsByPlatform - grouped data:', {
+    console.log('getRealtimeNewsByPlatform - grouped data:', {
       visiblePlatforms,
       groupedKeys: Object.keys(grouped),
       groupedCounts: Object.fromEntries(
@@ -345,7 +345,7 @@ export default function Home() {
       }))
       .filter(item => item.platform !== undefined);
 
-    console.log('getLatestNewsByPlatform - sorted platforms:', {
+    console.log('getRealtimeNewsByPlatform - sorted platforms:', {
       totalCount: sortedPlatforms.length,
       platforms: sortedPlatforms.map(p => ({ name: p.platform?.name, newsCount: p.news.length })),
     });
@@ -353,9 +353,9 @@ export default function Home() {
     return sortedPlatforms;
   };
 
-  const groupedLatestNews = getLatestNewsByPlatform();
+  const groupedRealtimeNews = getRealtimeNewsByPlatform();
 
-  const fetchLatestNews = async () => {
+  const fetchRealtimeNews = async () => {
     try {
       if (useRealApi) {
         const platform = selectedPlatform === 'all' ? 'all' : selectedPlatform;
@@ -365,7 +365,7 @@ export default function Home() {
         const timeoutId = setTimeout(() => controller.abort(), 15000);
 
         try {
-          const response = await fetch(`/api/news/${platform}?type=latest`, {
+          const response = await fetch(`/api/news/${platform}?type=realtime`, {
             signal: controller.signal,
           });
           clearTimeout(timeoutId);
@@ -373,7 +373,7 @@ export default function Home() {
           if (response.ok) {
             const result = await response.json();
             if (result.success) {
-              setLatestNews(result.data || []);
+              setRealtimeNews(result.data || []);
               return;
             }
           }
@@ -382,19 +382,19 @@ export default function Home() {
 
           // 如果是超时错误，继续使用 mock 数据
           if (fetchError.name === 'AbortError' || fetchError.message.includes('timeout')) {
-            console.warn(`Latest news API 请求超时，使用 mock 数据: ${fetchError.message}`);
+            console.warn(`Realtime news API 请求超时，使用 mock 数据: ${fetchError.message}`);
           }
           throw fetchError;
         }
       }
 
       // 降级到 mock 数据
-      const newsData = getLatestNews(selectedPlatform, 20);
-      setLatestNews(newsData);
+      const newsData = getRealtimeNews(selectedPlatform, 20);
+      setRealtimeNews(newsData);
     } catch (error) {
-      console.error('获取最新资讯失败:', error);
-      const newsData = getLatestNews(selectedPlatform, 20);
-      setLatestNews(newsData);
+      console.error('获取实时资讯失败:', error);
+      const newsData = getRealtimeNews(selectedPlatform, 20);
+      setRealtimeNews(newsData);
     }
   };
 
@@ -436,7 +436,7 @@ export default function Home() {
   };
 
   const newsList = activeTab === 'hot' ? hotNews :
-                  activeTab === 'latest' ? latestNews :
+                  activeTab === 'realtime' ? realtimeNews :
                   bookmarks;
 
   const currentPlatformInfo = selectedPlatform === 'all'
@@ -479,8 +479,8 @@ export default function Home() {
 
     if (activeTab === 'hot') {
       await fetchHotNews();
-    } else if (activeTab === 'latest') {
-      await fetchLatestNews();
+    } else if (activeTab === 'realtime') {
+      await fetchRealtimeNews();
     } else if (activeTab === 'favorites') {
       const savedBookmarks = localStorage.getItem('bookmarks');
       if (savedBookmarks) {
@@ -772,10 +772,10 @@ export default function Home() {
             <div className="text-center py-12 text-gray-500">
               {activeTab === 'favorites' ? '暂无收藏内容' : '暂无数据'}
             </div>
-          ) : (groupedNews && groupedNews.length > 0) || (groupedLatestNews && groupedLatestNews.length > 0) ? (
+          ) : (groupedNews && groupedNews.length > 0) || (groupedRealtimeNews && groupedRealtimeNews.length > 0) ? (
             // 全部标签：显示平台卡片网格布局（响应式三列）
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-              {(activeTab === 'hot' ? groupedNews : groupedLatestNews)?.map((item) => (
+              {(activeTab === 'hot' ? groupedNews : groupedRealtimeNews)?.map((item) => (
                 <PlatformCard
                   key={item.platform!.key}
                   platform={item.platform!}
@@ -829,7 +829,7 @@ export default function Home() {
         <div className="mx-auto max-w-md flex items-center justify-around px-4 py-2">
           {[
             { key: 'hot' as TabType, label: '热榜', icon: Flame },
-            { key: 'latest' as TabType, label: '最新', icon: Newspaper },
+            { key: 'realtime' as TabType, label: '实时', icon: Newspaper },
             { key: 'favorites' as TabType, label: '收藏', icon: Bookmark },
             { key: 'messages' as TabType, label: '消息', icon: MessageSquare },
             { key: 'profile' as TabType, label: '我的', icon: User },
