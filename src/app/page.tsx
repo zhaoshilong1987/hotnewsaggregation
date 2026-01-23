@@ -10,7 +10,7 @@ import PlatformEditor from '@/components/PlatformEditor';
 import PlatformIcon from '@/components/PlatformIcon';
 import PlatformSettings from '@/components/PlatformSettings';
 import BackButtonHandler from '@/components/BackButtonHandler';
-import { RefreshCw, Clock, Bookmark, User, Settings, Flame as AllIcon, Flame, AlertCircle, MessageSquare, Menu } from 'lucide-react';
+import { RefreshCw, Clock, Bookmark, User, Settings, Flame as AllIcon, Flame, AlertCircle, MessageSquare, Menu, Newspaper } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
 type TabType = 'hot' | 'latest' | 'favorites' | 'messages' | 'profile';
@@ -317,7 +317,7 @@ export default function Home() {
         const timeoutId = setTimeout(() => controller.abort(), 15000);
 
         try {
-          const response = await fetch(`/api/news/${platform}`, {
+          const response = await fetch(`/api/news/${platform}?type=latest`, {
             signal: controller.signal,
           });
           clearTimeout(timeoutId);
@@ -781,6 +781,7 @@ export default function Home() {
         <div className="mx-auto max-w-md flex items-center justify-around px-4 py-2">
           {[
             { key: 'hot' as TabType, label: '热榜', icon: Flame },
+            { key: 'latest' as TabType, label: '最新', icon: Newspaper },
             { key: 'favorites' as TabType, label: '收藏', icon: Bookmark },
             { key: 'messages' as TabType, label: '消息', icon: MessageSquare },
             { key: 'profile' as TabType, label: '我的', icon: User },

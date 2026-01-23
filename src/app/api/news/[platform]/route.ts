@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getMockNews } from '@/data/mockData';
+import { getMockNews, getLatestNews } from '@/data/mockData';
 import { PLATFORMS_CONFIG, PlatformConfig } from '@/lib/config';
 
 export const runtime = 'edge';
@@ -20,7 +20,7 @@ interface NewsItem {
 // 根据 platform key 获取平台配置
 function getPlatformConfig(platformKey: string): PlatformConfig | null {
   const platforms = PLATFORMS_CONFIG.settings.platforms;
-  return platforms.find(p => p.key === platformKey) || null;
+  return platforms.find((p: any) => p.key === platformKey) || null;
 }
 
 // 带超时的 fetch
@@ -44,7 +44,7 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeout = 500
   }
 }
 
-async function fetchFromExternalApi(platformKey: string): Promise<NewsItem[]> {
+async function fetchFromExternalApi(platformKey: string, type: 'hot' | 'latest' = 'hot'): Promise<NewsItem[]> {
   try {
     const platformConfig = getPlatformConfig(platformKey);
 
@@ -52,7 +52,13 @@ async function fetchFromExternalApi(platformKey: string): Promise<NewsItem[]> {
       throw new Error(`Platform ${platformKey} not found in config`);
     }
 
-    const apiUrl = platformConfig.apiUrl;
+    // 根据类型选择 API URL
+    let apiUrl: string;
+    if (type === 'latest' && platformConfig.latestApiUrl) {
+      apiUrl = platformConfig.latestApiUrl;
+    } else {
+      apiUrl = (platformConfig as any).apiUrl;
+    }
 
     // 使用带超时的 fetch，避免慢接口拖累整体性能
     const response = await fetchWithTimeout(apiUrl, {
@@ -139,6 +145,10 @@ export async function GET(
 ) {
   const { platform } = await params;
 
+  // 从 URL 中获取查询参数
+  const { searchParams } = new URL(request.url);
+  const type = (searchParams.get('type') as 'hot' | 'latest') || 'hot';
+
   if (!platform) {
     return NextResponse.json({
       success: false,
@@ -156,11 +166,11 @@ export async function GET(
         .filter(p => p.enabled)
         .map(p => p.key);
 
-      console.log('Fetching all platforms:', allPlatforms);
+      console.log(`Fetching all platforms (type=${type}):`, allPlatforms);
 
       // 并行获取所有平台的数据
       const results = await Promise.allSettled(
-        allPlatforms.map(p => fetchFromExternalApi(p))
+        allPlatforms.map(p => fetchFromExternalApi(p, type))
       );
 
       // 收集所有成功的请求
@@ -171,7 +181,7 @@ export async function GET(
         } else {
           console.error(`Failed to fetch platform ${allPlatforms[index]}:`, result.reason);
           // 如果某个平台失败，使用 mock 数据
-          const mockData = getMockNews(allPlatforms[index]);
+          const mockData = type === 'latest' ? getLatestNews(allPlatforms[index], 20) : getMockNews(allPlatforms[index]);
           allNews.push(...mockData);
         }
       });
@@ -185,7 +195,7 @@ export async function GET(
       });
     } else {
       // 获取单个平台的数据
-      const news = await fetchFromExternalApi(platform);
+      const news = await fetchFromExternalApi(platform, type);
 
       return NextResponse.json({
         success: true,
@@ -197,7 +207,7 @@ export async function GET(
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
     // 降级到 mock 数据
-    const mockData = getMockNews(platform);
+    const mockData = type === 'latest' ? getLatestNews(platform, 20) : getMockNews(platform);
 
     return NextResponse.json({
       success: true,

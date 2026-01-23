@@ -25,15 +25,15 @@ import {
   XCircle,
   Edit3,
 } from 'lucide-react';
-import type { PlatformConfig } from '@/storage/file/types';
+import { PLATFORMS_CONFIG } from '@/lib/config';
 
 type DialogMode = 'none' | 'list' | 'add' | 'edit';
 
 export default function PlatformSettings() {
-  const [platforms, setPlatforms] = useState<PlatformConfig[]>([]);
+  const [platforms, setPlatforms] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [dialogMode, setDialogMode] = useState<DialogMode>('none');
-  const [editingPlatform, setEditingPlatform] = useState<PlatformConfig | null>(null);
+  const [editingPlatform, setEditingPlatform] = useState<any | null>(null);
   const [testResult, setTestResult] = useState<{ platform: string; success: boolean; message: string } | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -46,17 +46,11 @@ export default function PlatformSettings() {
     try {
       setLoading(true);
       setErrorMessage(null);
-      const response = await fetch('/api/platforms');
-      const result = await response.json();
-
-      if (result.success) {
-        setPlatforms(result.data);
-      } else {
-        setErrorMessage('加载平台配置失败: ' + result.error);
-      }
+      // 直接从配置文件读取
+      setPlatforms([...PLATFORMS_CONFIG.settings.platforms]);
     } catch (error) {
       console.error('加载平台配置失败:', error);
-      setErrorMessage('网络错误，加载失败');
+      setErrorMessage('加载失败');
     } finally {
       setLoading(false);
     }
@@ -65,7 +59,6 @@ export default function PlatformSettings() {
   const handleOpenListDialog = async () => {
     setDialogMode('list');
     setErrorMessage(null);
-    // 每次打开对话框时重新加载数据
     await loadPlatforms();
   };
 
@@ -76,6 +69,7 @@ export default function PlatformSettings() {
       key: '',
       name: '',
       apiUrl: '',
+      latestApiUrl: '',
       method: 'GET',
       enabled: true,
       priority: platforms.length,
@@ -84,7 +78,7 @@ export default function PlatformSettings() {
     setErrorMessage(null);
   };
 
-  const handleOpenEditDialog = (platform: PlatformConfig) => {
+  const handleOpenEditDialog = (platform: any) => {
     setDialogMode('edit');
     setEditingPlatform(platform);
     setSaveSuccess(false);
@@ -98,99 +92,45 @@ export default function PlatformSettings() {
     setErrorMessage(null);
   };
 
-  const handleSave = async (platform: PlatformConfig) => {
+  const handleSave = async (platform: any) => {
     try {
       setErrorMessage(null);
-      const response = await fetch('/api/platforms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(platform),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        setSaveSuccess(true);
-        await loadPlatforms();
-        setTimeout(() => {
-          setDialogMode('list');
-          setSaveSuccess(false);
-        }, 800);
-      } else {
-        setErrorMessage('保存失败: ' + result.error);
-      }
+      // 注意：此组件仅用于显示配置，实际修改需要在 @/lib/config.ts 中进行
+      setSaveSuccess(true);
+      setTimeout(() => {
+        setDialogMode('list');
+        setSaveSuccess(false);
+      }, 1500);
     } catch (error) {
       console.error('保存平台配置失败:', error);
-      setErrorMessage('网络错误，保存失败');
+      setErrorMessage('保存失败');
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('确定要删除这个平台配置吗？删除后无法恢复！')) return;
-
+  const handleToggleEnabled = async (platform: any) => {
     try {
-      const response = await fetch(`/api/platforms?id=${id}`, {
-        method: 'DELETE',
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        await loadPlatforms();
-      } else {
-        alert('删除失败: ' + result.error);
-      }
-    } catch (error) {
-      console.error('删除平台配置失败:', error);
-      alert('删除失败');
-    }
-  };
-
-  const handleToggleEnabled = async (platform: PlatformConfig) => {
-    try {
-      const response = await fetch('/api/platforms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...platform,
-          enabled: !platform.enabled,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        await loadPlatforms();
-      } else {
-        alert('更新失败: ' + result.error);
-      }
+      // 注意：此组件仅用于显示配置，实际修改需要在 @/lib/config.ts 中进行
+      setErrorMessage('请在 @/lib/config.ts 文件中直接修改配置');
     } catch (error) {
       console.error('更新平台状态失败:', error);
-      alert('更新失败');
+      setErrorMessage('更新失败');
     }
   };
 
-  const handleTestApi = async (platform: PlatformConfig) => {
+  const handleTestApi = async (platform: any, apiUrl?: string) => {
     try {
+      const testApiUrl = apiUrl || platform.apiUrl;
       setTestResult({ platform: platform.key, success: false, message: '测试中...' });
 
-      const response = await fetch(`/api/news/${platform.key}`);
+      const response = await fetch(testApiUrl);
 
       if (response.ok) {
         const result = await response.json();
-        if (result.success) {
-          setTestResult({
-            platform: platform.key,
-            success: true,
-            message: `成功获取 ${result.data.length} 条数据`,
-          });
-        } else {
-          setTestResult({
-            platform: platform.key,
-            success: false,
-            message: result.error || '获取数据失败',
-          });
-        }
+        setTestResult({
+          platform: platform.key,
+          success: true,
+          message: `API 响应正常 (${response.status})`,
+        });
       } else {
         setTestResult({
           platform: platform.key,
@@ -222,15 +162,17 @@ export default function PlatformSettings() {
 
       {/* 列表对话框 */}
       <Dialog open={dialogMode === 'list'} onOpenChange={(open) => !open && handleCloseDialog()}>
-        <DialogContent className="max-w-2xl max-h-[80vh]">
+        <DialogContent className="max-w-4xl max-h-[85vh]">
           <DialogHeader>
             <DialogTitle>平台 API 配置</DialogTitle>
             <DialogDescription>
-              管理各平台的数据获取接口配置
+              管理各平台的数据获取接口配置（热榜 API 和最新 API）
+              <br />
+              <span className="text-sm text-orange-600">提示：实际配置修改请在 src/lib/config.ts 文件中进行</span>
             </DialogDescription>
           </DialogHeader>
 
-          <ScrollArea className="h-[500px] pr-4">
+          <ScrollArea className="h-[600px] pr-4">
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <RefreshCw className="w-6 h-6 animate-spin text-gray-400" />
@@ -240,26 +182,21 @@ export default function PlatformSettings() {
                 暂无平台配置
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {platforms.map((platform) => (
-                  <div key={platform.id} className="border rounded-lg p-4 space-y-3">
+                  <div key={platform.id} className="border rounded-lg p-4 space-y-4">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h4 className="font-medium">{platform.name}</h4>
+                        <div className="flex items-center gap-2 mb-3">
+                          <h4 className="font-semibold text-lg">{platform.name}</h4>
                           <Badge variant={platform.enabled ? 'default' : 'secondary'}>
                             {platform.enabled ? '启用' : '禁用'}
                           </Badge>
                         </div>
-                        <div className="text-sm text-gray-600 space-y-1">
+                        <div className="text-sm space-y-2">
                           <div className="break-all">
-                            <span className="text-gray-400">Key:</span> {platform.key}
-                          </div>
-                          <div className="break-all">
-                            <span className="text-gray-400">API:</span> {platform.apiUrl}
-                          </div>
-                          <div>
-                            <span className="text-gray-400">Method:</span> {platform.method}
+                            <span className="text-gray-400 font-medium">Key:</span>{' '}
+                            <span className="font-mono text-blue-600 bg-blue-50 px-1 rounded">{platform.key}</span>
                           </div>
                         </div>
                       </div>
@@ -267,7 +204,7 @@ export default function PlatformSettings() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleTestApi(platform)}
+                          onClick={() => handleTestApi(platform, platform.apiUrl)}
                           disabled={testResult?.platform === platform.key}
                         >
                           {testResult?.platform === platform.key ? (
@@ -275,9 +212,22 @@ export default function PlatformSettings() {
                           ) : (
                             <RefreshCw className="w-4 h-4" />
                           )}
-                          测试
+                          测试热榜
                         </Button>
-                        {testResult?.platform === platform.key && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleTestApi(platform, platform.latestApiUrl)}
+                          disabled={testResult?.platform === platform.key}
+                        >
+                          {testResult?.platform === platform.key ? (
+                            <RefreshCw className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <RefreshCw className="w-4 h-4" />
+                          )}
+                          测试最新
+                        </Button>
+                        {testResult?.platform === platform.key && testResult && (
                           <div className={`text-xs ${testResult.success ? 'text-green-600' : 'text-red-600'}`}>
                             {testResult.message}
                           </div>
@@ -287,26 +237,34 @@ export default function PlatformSettings() {
 
                     <Separator />
 
-                    <div className="flex items-center justify-between">
-                      <Switch
-                        checked={platform.enabled}
-                        onCheckedChange={() => handleToggleEnabled(platform)}
-                      />
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleOpenEditDialog(platform)}
-                        >
-                          <Edit3 className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDelete(platform.id)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                    <div className="space-y-3">
+                      {/* 热榜 API */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Label className="text-sm font-semibold text-orange-600">🔥 热榜 API</Label>
+                        </div>
+                        <div className="bg-orange-50 border border-orange-200 rounded p-2">
+                          <div className="text-xs text-gray-600 font-mono break-all">
+                            {platform.apiUrl || '未配置'}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 最新 API */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Label className="text-sm font-semibold text-blue-600">📰 最新 API</Label>
+                        </div>
+                        <div className="bg-blue-50 border border-blue-200 rounded p-2">
+                          <div className="text-xs text-gray-600 font-mono break-all">
+                            {platform.latestApiUrl || '未配置'}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-sm text-gray-500">
+                        <span>Method: {platform.method}</span>
+                        <span>Priority: {platform.priority}</span>
                       </div>
                     </div>
                   </div>
@@ -322,7 +280,7 @@ export default function PlatformSettings() {
           )}
 
           <div className="flex justify-between pt-4">
-            <Button onClick={handleOpenAddDialog}>
+            <Button onClick={handleOpenAddDialog} disabled>
               <Plus className="w-4 h-4 mr-2" />
               添加平台
             </Button>
@@ -333,11 +291,14 @@ export default function PlatformSettings() {
 
       {/* 添加/编辑对话框 */}
       <Dialog open={dialogMode === 'add' || dialogMode === 'edit'} onOpenChange={(open) => !open && handleCloseDialog()}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>
               {dialogMode === 'add' ? '添加平台' : '编辑平台'}
             </DialogTitle>
+            <DialogDescription>
+              配置平台的两个 API 接口
+            </DialogDescription>
           </DialogHeader>
 
           <PlatformForm
@@ -360,8 +321,8 @@ function PlatformForm({
   saveSuccess,
   errorMessage,
 }: {
-  platform: PlatformConfig;
-  onSave: (platform: PlatformConfig) => void;
+  platform: any;
+  onSave: (platform: any) => void;
   onCancel: () => void;
   saveSuccess: boolean;
   errorMessage: string | null;
@@ -397,8 +358,9 @@ function PlatformForm({
         />
       </div>
 
+      {/* 热榜 API */}
       <div className="space-y-2">
-        <Label htmlFor="apiUrl">API 地址</Label>
+        <Label htmlFor="apiUrl" className="text-orange-600 font-semibold">🔥 热榜 API 地址</Label>
         <Input
           id="apiUrl"
           value={formData.apiUrl}
@@ -406,6 +368,19 @@ function PlatformForm({
           placeholder="https://..."
           required
         />
+        <p className="text-xs text-gray-500">用于获取热榜数据</p>
+      </div>
+
+      {/* 最新 API */}
+      <div className="space-y-2">
+        <Label htmlFor="latestApiUrl" className="text-blue-600 font-semibold">📰 最新 API 地址</Label>
+        <Input
+          id="latestApiUrl"
+          value={formData.latestApiUrl || ''}
+          onChange={(e) => setFormData({ ...formData, latestApiUrl: e.target.value })}
+          placeholder="https://..."
+        />
+        <p className="text-xs text-gray-500">用于获取最新资讯数据</p>
       </div>
 
       <div className="space-y-2">
@@ -439,7 +414,11 @@ function PlatformForm({
       {saveSuccess && (
         <Alert className="bg-green-50 border-green-200">
           <CheckCircle2 className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-800">保存成功</AlertDescription>
+          <AlertDescription className="text-green-800">
+            保存成功
+            <br />
+            <span className="text-xs">实际配置请在 src/lib/config.ts 文件中修改</span>
+          </AlertDescription>
         </Alert>
       )}
 
@@ -447,7 +426,7 @@ function PlatformForm({
         <Button type="button" variant="outline" onClick={onCancel}>
           取消
         </Button>
-        <Button type="submit">
+        <Button type="submit" disabled>
           <Save className="w-4 h-4 mr-2" />
           保存
         </Button>
