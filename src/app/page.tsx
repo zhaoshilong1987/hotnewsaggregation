@@ -23,7 +23,8 @@ export default function Home() {
   const [isPulling, setIsPulling] = useState(false);
   const [realtimeNews, setRealtimeNews] = useState<any[]>([]);
   const [bookmarks, setBookmarks] = useState<any[]>([]);
-  const [followingPlatforms, setFollowingPlatforms] = useState<string[]>([]);
+  const [followingHotPlatforms, setFollowingHotPlatforms] = useState<string[]>([]);
+  const [followingRealtimePlatforms, setFollowingRealtimePlatforms] = useState<string[]>([]);
   const [showPlatformEditor, setShowPlatformEditor] = useState(false);
   const [visiblePlatforms, setVisiblePlatforms] = useState<string[]>([]);
   const [hiddenPlatforms, setHiddenPlatforms] = useState<string[]>([]);
@@ -183,12 +184,35 @@ export default function Home() {
 
   // 加载关注平台
   useEffect(() => {
-    const savedFollowing = localStorage.getItem('followingPlatforms');
-    if (savedFollowing) {
+    // 读取热榜关注平台
+    const savedHotFollowing = localStorage.getItem('followingHotPlatforms');
+    if (savedHotFollowing) {
       try {
-        setFollowingPlatforms(JSON.parse(savedFollowing));
+        setFollowingHotPlatforms(JSON.parse(savedHotFollowing));
       } catch (e) {
-        console.error('Failed to parse following platforms:', e);
+        console.error('Failed to parse following hot platforms:', e);
+      }
+    }
+
+    // 读取实时关注平台
+    const savedRealtimeFollowing = localStorage.getItem('followingRealtimePlatforms');
+    if (savedRealtimeFollowing) {
+      try {
+        setFollowingRealtimePlatforms(JSON.parse(savedRealtimeFollowing));
+      } catch (e) {
+        console.error('Failed to parse following realtime platforms:', e);
+      }
+    }
+
+    // 向后兼容：如果用户之前有旧的 followingPlatforms，复制到两个新状态
+    const oldFollowing = localStorage.getItem('followingPlatforms');
+    if (oldFollowing && !savedHotFollowing && !savedRealtimeFollowing) {
+      try {
+        const oldFollowingList = JSON.parse(oldFollowing);
+        setFollowingHotPlatforms(oldFollowingList);
+        setFollowingRealtimePlatforms(oldFollowingList);
+      } catch (e) {
+        console.error('Failed to migrate old following platforms:', e);
       }
     }
   }, []);
@@ -528,17 +552,25 @@ export default function Home() {
   };
 
   const handleToggleFollow = (platformKey: string) => {
-    const isFollowing = followingPlatforms.includes(platformKey);
+    // 根据当前标签页确定更新哪个关注列表
+    const currentList = activeTab === 'hot' ? followingHotPlatforms : followingRealtimePlatforms;
+    const isFollowing = currentList.includes(platformKey);
     let updated: string[];
 
     if (isFollowing) {
-      updated = followingPlatforms.filter(p => p !== platformKey);
+      updated = currentList.filter(p => p !== platformKey);
     } else {
-      updated = [...followingPlatforms, platformKey];
+      updated = [...currentList, platformKey];
     }
 
-    setFollowingPlatforms(updated);
-    localStorage.setItem('followingPlatforms', JSON.stringify(updated));
+    // 根据标签页更新对应的状态
+    if (activeTab === 'hot') {
+      setFollowingHotPlatforms(updated);
+      localStorage.setItem('followingHotPlatforms', JSON.stringify(updated));
+    } else {
+      setFollowingRealtimePlatforms(updated);
+      localStorage.setItem('followingRealtimePlatforms', JSON.stringify(updated));
+    }
   };
 
   const getVisiblePlatformList = () => {
@@ -672,51 +704,113 @@ export default function Home() {
         {/* 新闻列表 */}
         <div className={`px-4 space-y-3 ${activeTab !== 'profile' && activeTab !== 'following' ? 'pt-20' : 'py-3'}`}>
           {activeTab === 'following' ? (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold">关注的平台</h2>
-                <span className="text-sm text-gray-500">{followingPlatforms.length} 个平台</span>
+            <div className="space-y-6">
+              {/* 热榜关注 */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Flame className="w-5 h-5 text-orange-500" />
+                    <h2 className="text-xl font-bold">热榜关注</h2>
+                  </div>
+                  <span className="text-sm text-gray-500">{followingHotPlatforms.length} 个平台</span>
+                </div>
+
+                {followingHotPlatforms.length === 0 ? (
+                  <div className="text-center py-8 bg-white rounded-xl shadow-sm">
+                    <p className="text-sm text-gray-400">在热榜页面点击平台卡片右上角关注</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    {followingHotPlatforms.map((platformKey) => {
+                      const platform = PLATFORMS.find(p => p.key === platformKey);
+                      if (!platform) return null;
+
+                      return (
+                        <div
+                          key={platform.key}
+                          className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <PlatformIcon platform={platform.key as any} size={24} />
+                              <h3 className="font-semibold text-gray-900">{platform.name}</h3>
+                            </div>
+                            <button
+                              onClick={() => {
+                                const updated = followingHotPlatforms.filter(p => p !== platform.key);
+                                setFollowingHotPlatforms(updated);
+                                localStorage.setItem('followingHotPlatforms', JSON.stringify(updated));
+                              }}
+                              className="p-2 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-600 transition-colors"
+                            >
+                              <Heart className="w-4 h-4 fill-current" />
+                            </button>
+                          </div>
+                          <p className="text-xs text-gray-500">已关注热榜</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
-              {followingPlatforms.length === 0 ? (
+              {/* 实时关注 */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-blue-500" />
+                    <h2 className="text-xl font-bold">实时关注</h2>
+                  </div>
+                  <span className="text-sm text-gray-500">{followingRealtimePlatforms.length} 个平台</span>
+                </div>
+
+                {followingRealtimePlatforms.length === 0 ? (
+                  <div className="text-center py-8 bg-white rounded-xl shadow-sm">
+                    <p className="text-sm text-gray-400">在实时页面点击平台卡片右上角关注</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    {followingRealtimePlatforms.map((platformKey) => {
+                      const platform = PLATFORMS.find(p => p.key === platformKey);
+                      if (!platform) return null;
+
+                      return (
+                        <div
+                          key={platform.key}
+                          className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <PlatformIcon platform={platform.key as any} size={24} />
+                              <h3 className="font-semibold text-gray-900">{platform.name}</h3>
+                            </div>
+                            <button
+                              onClick={() => {
+                                const updated = followingRealtimePlatforms.filter(p => p !== platform.key);
+                                setFollowingRealtimePlatforms(updated);
+                                localStorage.setItem('followingRealtimePlatforms', JSON.stringify(updated));
+                              }}
+                              className="p-2 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-600 transition-colors"
+                            >
+                              <Heart className="w-4 h-4 fill-current" />
+                            </button>
+                          </div>
+                          <p className="text-xs text-gray-500">已关注实时</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* 如果两个列表都为空，显示空状态 */}
+              {followingHotPlatforms.length === 0 && followingRealtimePlatforms.length === 0 && (
                 <div className="text-center py-12 bg-white rounded-xl shadow-sm">
                   <Heart className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                   <h3 className="text-lg font-semibold mb-2 text-gray-600">还没有关注任何平台</h3>
                   <p className="text-sm text-gray-400">
                     在热榜或实时页面点击平台卡片右上角即可关注
                   </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                  {followingPlatforms.map((platformKey) => {
-                    const platform = PLATFORMS.find(p => p.key === platformKey);
-                    if (!platform) return null;
-
-                    return (
-                      <div
-                        key={platform.key}
-                        className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
-                      >
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <PlatformIcon platform={platform.key as any} size={24} />
-                            <h3 className="font-semibold text-gray-900">{platform.name}</h3>
-                          </div>
-                          <button
-                            onClick={() => {
-                              const updated = followingPlatforms.filter(p => p !== platform.key);
-                              setFollowingPlatforms(updated);
-                              localStorage.setItem('followingPlatforms', JSON.stringify(updated));
-                            }}
-                            className="p-2 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-600 transition-colors"
-                          >
-                            <Heart className="w-4 h-4 fill-current" />
-                          </button>
-                        </div>
-                        <p className="text-xs text-gray-500">已关注</p>
-                      </div>
-                    );
-                  })}
                 </div>
               )}
             </div>
@@ -869,7 +963,12 @@ export default function Home() {
                   key={item.platform!.key}
                   platform={item.platform!}
                   news={item.news}
-                  isFollowing={followingPlatforms.includes(item.platform!.key)}
+                  type={activeTab === 'hot' ? 'hot' : 'realtime'}
+                  isFollowing={
+                    activeTab === 'hot'
+                      ? followingHotPlatforms.includes(item.platform!.key)
+                      : followingRealtimePlatforms.includes(item.platform!.key)
+                  }
                   onToggleFollow={handleToggleFollow}
                 />
               ))}

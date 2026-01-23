@@ -28,6 +28,7 @@ interface NewsCardProps {
   onBookmark?: (id: string) => void;
   showBookmark?: boolean;
   compact?: boolean;
+  showTimeline?: boolean; // 新增：是否显示时间线
 }
 
 const PLATFORM_COLORS: Record<string, string> = {
@@ -39,7 +40,7 @@ const PLATFORM_COLORS: Record<string, string> = {
   'cailianpress': '#FF6B00',
 };
 
-export default function NewsCard({ news, platform, rank, onRemove, onBookmark, showBookmark = true, compact = false }: NewsCardProps) {
+export default function NewsCard({ news, platform, rank, onRemove, onBookmark, showBookmark = true, compact = false, showTimeline = false }: NewsCardProps) {
   const [isBookmarked, setIsBookmarked] = useState(false);
 
   // 检查是否已收藏
@@ -205,10 +206,22 @@ export default function NewsCard({ news, platform, rank, onRemove, onBookmark, s
 
       <div className={`${compact ? 'p-3' : 'p-4'}`}>
         <div className={`${compact ? 'flex gap-2' : 'flex gap-3'}`}>
+          {/* 时间线（仅在实时模式显示） */}
+          {showTimeline && (
+            <div className="flex-shrink-0 w-12 flex flex-col items-center py-1">
+              {/* 日期 */}
+              <div className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-md mb-1">
+                {formatPublishTime(news.publishTime)}
+              </div>
+              {/* 竖线 */}
+              <div className="flex-1 w-0.5 bg-gradient-to-b from-blue-300 via-blue-200 to-transparent"></div>
+            </div>
+          )}
+
           {/* 内容区 */}
           <div className="flex-1 min-w-0">
             {/* 标题 */}
-            <h2 className={`${compact ? 'text-sm font-medium' : 'text-base font-semibold'} text-gray-900 ${compact ? 'mb-1' : 'mb-2'} line-clamp-2 leading-snug group-hover:text-blue-600 transition-colors`}>
+            <h2 className={`${compact ? 'text-sm font-medium' : 'text-base font-semibold'} text-gray-900 ${compact ? 'mb-1' : 'mb-2'} line-clamp-1 leading-snug group-hover:text-blue-600 transition-colors`}>
               {news.title}
             </h2>
 

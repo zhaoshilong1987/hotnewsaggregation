@@ -12,6 +12,7 @@ interface PlatformCardProps {
   limit?: number;
   isFollowing?: boolean;
   onToggleFollow?: (platformKey: string) => void;
+  type?: 'hot' | 'realtime'; // 新增：卡片类型（热榜或实时）
 }
 
 export default function PlatformCard({
@@ -20,6 +21,7 @@ export default function PlatformCard({
   limit = 3,
   isFollowing = false,
   onToggleFollow,
+  type = 'hot',
 }: PlatformCardProps) {
   const [displayCount, setDisplayCount] = useState(limit);
 
@@ -41,6 +43,14 @@ export default function PlatformCard({
         <div className="flex items-center gap-2">
           <PlatformIcon platform={platform.key} size={18} />
           <h3 className="font-semibold text-gray-900 text-sm">{platform.name}</h3>
+          {/* 类型标签 */}
+          <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+            type === 'hot'
+              ? 'bg-orange-100 text-orange-600'
+              : 'bg-blue-100 text-blue-600'
+          }`}>
+            {type === 'hot' ? '热榜' : '实时'}
+          </span>
           <span className="text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">
             {news.length}
           </span>
@@ -72,6 +82,7 @@ export default function PlatformCard({
             news={item}
             platform={platform}
             compact
+            showTimeline={type === 'realtime'} // 实时模式显示时间线
           />
         ))}
 
