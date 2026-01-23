@@ -5,11 +5,13 @@ export const runtime = 'edge';
 
 export type PlatformConfig = typeof PLATFORMS_CONFIG.settings.platforms[number];
 
+// 创建可变的数据副本
+// eslint-disable-next-line prefer-const
+let platforms = [...PLATFORMS_CONFIG.settings.platforms];
+
 // GET - 获取所有平台配置
 export async function GET() {
   try {
-    const platforms = PLATFORMS_CONFIG.settings.platforms;
-
     return NextResponse.json({
       success: true,
       data: platforms,
@@ -32,15 +34,15 @@ export async function POST(request: Request) {
   try {
     const platform = await request.json() as PlatformConfig;
 
-    // 更新内存中的配置
-    const index = PLATFORMS_CONFIG.settings.platforms.findIndex(p => p.id === platform.id);
+    // 更新可变配置
+    const index = platforms.findIndex(p => p.id === platform.id);
 
     if (index >= 0) {
       // 更新现有平台
-      PLATFORMS_CONFIG.settings.platforms[index] = platform;
+      platforms[index] = platform;
     } else {
       // 添加新平台
-      PLATFORMS_CONFIG.settings.platforms.push(platform);
+      platforms.push(platform);
     }
 
     return NextResponse.json({
@@ -62,11 +64,11 @@ export async function DELETE(request: Request) {
     const { searchParams } = new URL(request.url);
     const id = parseInt(searchParams.get('id') || '0');
 
-    // 从内存中删除配置
-    const index = PLATFORMS_CONFIG.settings.platforms.findIndex(p => p.id === id);
+    // 从可变配置中删除
+    const index = platforms.findIndex(p => p.id === id);
 
     if (index >= 0) {
-      PLATFORMS_CONFIG.settings.platforms.splice(index, 1);
+      platforms.splice(index, 1);
       return NextResponse.json({
         success: true,
       });

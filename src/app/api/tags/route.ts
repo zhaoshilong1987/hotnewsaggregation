@@ -8,12 +8,16 @@ export interface TagsConfig {
   hidden: string[];
 }
 
+// 创建可变的数据副本
+// eslint-disable-next-line prefer-const
+let tagsConfig: TagsConfig = {
+  visible: [...PLATFORMS_CONFIG.settings.tags.visible],
+  hidden: [...PLATFORMS_CONFIG.settings.tags.hidden],
+};
+
 // GET - 获取平台标签配置
 export async function GET() {
   try {
-    // 从静态配置中读取平台标签
-    const tagsConfig = PLATFORMS_CONFIG.settings.tags;
-
     // 如果 visible 为空，使用所有启用的平台
     let visiblePlatforms = [...tagsConfig.visible];
     if (visiblePlatforms.length === 0) {
@@ -54,24 +58,24 @@ export async function POST(request: Request) {
   try {
     const body = await request.json() as { visible?: string[]; hidden?: string[] };
 
-    // 更新内存中的配置
+    // 更新可变配置
     if (body.visible) {
-      PLATFORMS_CONFIG.settings.tags.visible = body.visible;
+      tagsConfig.visible = body.visible;
     }
     if (body.hidden) {
-      PLATFORMS_CONFIG.settings.tags.hidden = body.hidden;
+      tagsConfig.hidden = body.hidden;
     }
 
     console.log('Updated platform tags config:', {
-      visible: PLATFORMS_CONFIG.settings.tags.visible,
-      hidden: PLATFORMS_CONFIG.settings.tags.hidden,
+      visible: tagsConfig.visible,
+      hidden: tagsConfig.hidden,
     });
 
     return NextResponse.json({
       success: true,
       data: {
-        visible: PLATFORMS_CONFIG.settings.tags.visible,
-        hidden: PLATFORMS_CONFIG.settings.tags.hidden,
+        visible: tagsConfig.visible,
+        hidden: tagsConfig.hidden,
       },
     });
   } catch (error) {

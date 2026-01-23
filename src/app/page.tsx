@@ -536,7 +536,7 @@ export default function Home() {
                         : 'bg-white/20 text-white hover:bg-white/30'
                     }`}
                   >
-                    <PlatformIcon platformId={platformKey} size={16} />
+                    <PlatformIcon platform={platformKey as any} size={16} />
                     <span className="text-xs font-medium whitespace-nowrap">{platform.name}</span>
                   </button>
                 );
@@ -695,8 +695,8 @@ export default function Home() {
               {activeTab === 'favorites' ? '暂无收藏内容' : '暂无数据'}
             </div>
           ) : groupedNews && groupedNews.length > 0 ? (
-            // 全部标签：显示平台卡片网格布局
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            // 全部标签：显示平台卡片网格布局（响应式三列）
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               {groupedNews.map((item) => (
                 <PlatformCard
                   key={item.platform!.key}

@@ -40,6 +40,8 @@ const config: CapacitorConfig = {
     // 禁用 CapacitorHttp，使用原生 fetch
     CapacitorHttp: {
       enabled: false
-    },
+    }
+  }
+};
 
-
+export default config;

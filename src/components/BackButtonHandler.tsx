@@ -16,12 +16,14 @@ export default function BackButtonHandler({ onBack }: BackButtonHandlerProps) {
       try {
         const capacitor = await import('@capacitor/core');
         if (capacitor.Capacitor.isNativePlatform()) {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
           const backButtonModule = await import('@capacitor/android');
           BackButton = backButtonModule.BackButton;
           App = backButtonModule.App;
 
           // 监听后退按钮
-          BackButton.addListener('backButton', ({ canGoBack }) => {
+          BackButton.addListener('backButton', ({ canGoBack }: { canGoBack: boolean }) => {
             const shouldPreventDefault = onBack();
             if (!shouldPreventDefault) {
               // 如果不需要阻止默认行为，退出应用
