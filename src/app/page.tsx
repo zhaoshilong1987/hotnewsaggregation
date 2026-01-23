@@ -10,7 +10,7 @@ import PlatformEditor from '@/components/PlatformEditor';
 import PlatformIcon from '@/components/PlatformIcon';
 import PlatformSettings from '@/components/PlatformSettings';
 import BackButtonHandler from '@/components/BackButtonHandler';
-import { RefreshCw, Clock, Bookmark, User, Settings, Flame as AllIcon, Flame, AlertCircle, MessageSquare } from 'lucide-react';
+import { RefreshCw, Clock, Bookmark, User, Settings, Flame as AllIcon, Flame, AlertCircle, MessageSquare, Menu } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
 type TabType = 'hot' | 'latest' | 'favorites' | 'messages' | 'profile';
@@ -517,11 +517,11 @@ export default function Home() {
               }`}
             >
               <AllIcon className="w-4 h-4" />
-              <span className="text-sm font-medium whitespace-nowrap">全部</span>
+              <span className="text-xs font-medium whitespace-nowrap">全部</span>
             </button>
 
             {/* 平台标签列表 */}
-            <div className="flex gap-2 overflow-x-auto scrollbar-auto-hide flex-1">
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide flex-1">
               {visiblePlatforms.map((platformKey) => {
                 const platform = PLATFORMS.find((p) => p.key === platformKey);
                 if (!platform) return null;
@@ -537,19 +537,18 @@ export default function Home() {
                     }`}
                   >
                     <PlatformIcon platformId={platformKey} size={16} />
-                    <span className="text-sm font-medium whitespace-nowrap">{platform.name}</span>
+                    <span className="text-xs font-medium whitespace-nowrap">{platform.name}</span>
                   </button>
                 );
               })}
             </div>
 
-            {/* 刷新按钮 */}
+            {/* 首页设置按钮 */}
             <button
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className="flex-shrink-0 p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-all disabled:opacity-50"
+              onClick={() => setShowPlatformEditor(true)}
+              className="flex-shrink-0 p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-all"
             >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <Menu className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -652,14 +651,14 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* 平台标签管理 */}
+                {/* 订制首页 */}
                 <div className="border-t border-gray-100">
                   <button
                     onClick={() => setShowPlatformEditor(true)}
                     className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
                   >
                     <div className="text-left">
-                      <div className="font-medium">平台标签管理</div>
+                      <div className="font-medium">订制首页</div>
                       <div className="text-sm text-gray-500">管理首页显示的平台标签</div>
                     </div>
                     <Settings className="w-5 h-5 text-gray-400" />
@@ -783,7 +782,7 @@ export default function Home() {
                 </div>
 
                 {/* 标签文本 */}
-                <span className="text-xs font-medium transition-all duration-300">
+                <span className="text-[10px] font-medium transition-all duration-300">
                   {tab.label}
                 </span>
               </button>
