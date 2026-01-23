@@ -29,6 +29,7 @@ interface NewsCardProps {
   showBookmark?: boolean;
   compact?: boolean;
   showTimeline?: boolean; // 新增：是否显示时间线
+  isHotList?: boolean; // 新增：是否是热榜模式
 }
 
 const PLATFORM_COLORS: Record<string, string> = {
@@ -40,7 +41,7 @@ const PLATFORM_COLORS: Record<string, string> = {
   'cailianpress': '#FF6B00',
 };
 
-export default function NewsCard({ news, platform, rank, onRemove, onBookmark, showBookmark = true, compact = false, showTimeline = false }: NewsCardProps) {
+export default function NewsCard({ news, platform, rank, onRemove, onBookmark, showBookmark = true, compact = false, showTimeline = false, isHotList = false }: NewsCardProps) {
   const [isBookmarked, setIsBookmarked] = useState(false);
 
   // 检查是否已收藏
@@ -218,6 +219,25 @@ export default function NewsCard({ news, platform, rank, onRemove, onBookmark, s
             </div>
           )}
 
+          {/* 排名数字（仅在热榜模式且紧凑模式下显示） */}
+          {isHotList && compact && rank && (
+            <div className="flex-shrink-0 w-6 flex flex-col items-center justify-center">
+              <span
+                className={`text-lg font-bold ${
+                  rank === 1
+                    ? 'text-red-500'
+                    : rank === 2
+                    ? 'text-orange-500'
+                    : rank === 3
+                    ? 'text-orange-300'
+                    : 'text-gray-500'
+                }`}
+              >
+                {rank}
+              </span>
+            </div>
+          )}
+
           {/* 内容区 */}
           <div className="flex-1 min-w-0">
             {/* 标题 */}
@@ -249,11 +269,13 @@ export default function NewsCard({ news, platform, rank, onRemove, onBookmark, s
 
             {/* 元信息行 */}
             <div className="flex flex-wrap items-center gap-1.5 text-xs">
-              {/* 发布时间 */}
-              <span className="flex items-center gap-1 text-gray-500 hover:text-blue-600 transition-colors">
-                <Clock className={`${compact ? 'w-3 h-3' : 'w-3.5 h-3.5'}`} />
-                {formatPublishTime(news.publishTime)}
-              </span>
+              {/* 发布时间（仅在非热榜模式下显示） */}
+              {!isHotList && (
+                <span className="flex items-center gap-1 text-gray-500 hover:text-blue-600 transition-colors">
+                  <Clock className={`${compact ? 'w-3 h-3' : 'w-3.5 h-3.5'}`} />
+                  {formatPublishTime(news.publishTime)}
+                </span>
+              )}
 
               {/* 热度值 */}
               <div className="flex items-center gap-1 text-blue-600 font-semibold bg-blue-50 px-2 py-0.5 rounded-full">

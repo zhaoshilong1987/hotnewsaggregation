@@ -81,8 +81,10 @@ export default function PlatformCard({
             key={`${item.id}-${index}`}
             news={item}
             platform={platform}
+            rank={index + 1}
             compact
             showTimeline={type === 'realtime'} // 实时模式显示时间线
+            isHotList={type === 'hot'} // 热榜模式显示排名
           />
         ))}
 

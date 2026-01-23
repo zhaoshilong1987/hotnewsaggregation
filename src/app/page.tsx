@@ -976,11 +976,13 @@ export default function Home() {
           ) : (
             // 其他标签：显示单列新闻列表
             <>
-              {newsList.slice(0, displayCount).map((item: any) => (
+              {newsList.slice(0, displayCount).map((item: any, index: number) => (
                 <NewsCard
                   key={item.id}
                   news={item}
                   platform={currentPlatformInfo}
+                  rank={index + 1}
+                  isHotList={activeTab === 'hot'}
                 />
               ))}
 
