@@ -10,10 +10,10 @@ import PlatformEditor from '@/components/PlatformEditor';
 import PlatformIcon from '@/components/PlatformIcon';
 import PlatformSettings from '@/components/PlatformSettings';
 import BackButtonHandler from '@/components/BackButtonHandler';
-import { RefreshCw, Clock, Bookmark, User, Settings, Flame as AllIcon, Flame, AlertCircle, MessageSquare, Menu, Newspaper } from 'lucide-react';
+import { RefreshCw, Clock, Bookmark, User, Settings, Flame as AllIcon, Flame, AlertCircle, MessageSquare, Menu, Newspaper, Heart } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
-type TabType = 'hot' | 'realtime' | 'favorites' | 'messages' | 'profile';
+type TabType = 'hot' | 'realtime' | 'following' | 'profile';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<TabType>('hot');
@@ -23,6 +23,7 @@ export default function Home() {
   const [isPulling, setIsPulling] = useState(false);
   const [realtimeNews, setRealtimeNews] = useState<any[]>([]);
   const [bookmarks, setBookmarks] = useState<any[]>([]);
+  const [followingPlatforms, setFollowingPlatforms] = useState<string[]>([]);
   const [showPlatformEditor, setShowPlatformEditor] = useState(false);
   const [visiblePlatforms, setVisiblePlatforms] = useState<string[]>([]);
   const [hiddenPlatforms, setHiddenPlatforms] = useState<string[]>([]);
@@ -176,6 +177,18 @@ export default function Home() {
         setBookmarks(JSON.parse(savedBookmarks));
       } catch (e) {
         console.error('Failed to parse bookmarks:', e);
+      }
+    }
+  }, []);
+
+  // 加载关注平台
+  useEffect(() => {
+    const savedFollowing = localStorage.getItem('followingPlatforms');
+    if (savedFollowing) {
+      try {
+        setFollowingPlatforms(JSON.parse(savedFollowing));
+      } catch (e) {
+        console.error('Failed to parse following platforms:', e);
       }
     }
   }, []);
@@ -481,26 +494,11 @@ export default function Home() {
       await fetchHotNews();
     } else if (activeTab === 'realtime') {
       await fetchRealtimeNews();
-    } else if (activeTab === 'favorites') {
-      const savedBookmarks = localStorage.getItem('bookmarks');
-      if (savedBookmarks) {
-        try {
-          setBookmarks(JSON.parse(savedBookmarks));
-        } catch (e) {
-          console.error('Failed to parse bookmarks:', e);
-        }
-      }
     } else {
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
     setIsRefreshing(false);
-  };
-
-  const handleRemoveBookmark = (id: string) => {
-    const updated = bookmarks.filter(item => item.id !== id);
-    setBookmarks(updated);
-    localStorage.setItem('bookmarks', JSON.stringify(updated));
   };
 
   const handleSavePlatforms = async (visible: string[], hidden: string[]) => {
@@ -527,6 +525,20 @@ export default function Home() {
     } catch (error) {
       console.error('保存平台标签配置失败:', error);
     }
+  };
+
+  const handleToggleFollow = (platformKey: string) => {
+    const isFollowing = followingPlatforms.includes(platformKey);
+    let updated: string[];
+
+    if (isFollowing) {
+      updated = followingPlatforms.filter(p => p !== platformKey);
+    } else {
+      updated = [...followingPlatforms, platformKey];
+    }
+
+    setFollowingPlatforms(updated);
+    localStorage.setItem('followingPlatforms', JSON.stringify(updated));
   };
 
   const getVisiblePlatformList = () => {
@@ -558,8 +570,8 @@ export default function Home() {
         }}
       />
 
-      {/* 平台标签栏 - 固定在顶部，适配状态栏（仅在非"我的"和"消息"界面显示） */}
-      {activeTab !== 'profile' && activeTab !== 'messages' && (
+      {/* 平台标签栏 - 固定在顶部，适配状态栏（仅在非"我的"和"关注"界面显示） */}
+      {activeTab !== 'profile' && activeTab !== 'following' && (
         <div
           className="fixed top-0 left-0 right-0 z-50 bg-blue-600 shadow-md"
           style={{ paddingTop: 'max(0px, env(safe-area-inset-top) - 8px)' }}
@@ -658,14 +670,55 @@ export default function Home() {
         )}
 
         {/* 新闻列表 */}
-        <div className={`px-4 space-y-3 ${activeTab !== 'profile' && activeTab !== 'messages' ? 'pt-20' : 'py-3'}`}>
-          {activeTab === 'messages' ? (
+        <div className={`px-4 space-y-3 ${activeTab !== 'profile' && activeTab !== 'following' ? 'pt-20' : 'py-3'}`}>
+          {activeTab === 'following' ? (
             <div className="space-y-4">
-              <div className="text-center py-12 text-gray-500">
-                <MessageSquare className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <h2 className="text-xl font-semibold mb-2">消息中心</h2>
-                <p className="text-sm">暂无新消息</p>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold">关注的平台</h2>
+                <span className="text-sm text-gray-500">{followingPlatforms.length} 个平台</span>
               </div>
+
+              {followingPlatforms.length === 0 ? (
+                <div className="text-center py-12 bg-white rounded-xl shadow-sm">
+                  <Heart className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                  <h3 className="text-lg font-semibold mb-2 text-gray-600">还没有关注任何平台</h3>
+                  <p className="text-sm text-gray-400">
+                    在热榜或实时页面点击平台卡片右上角即可关注
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  {followingPlatforms.map((platformKey) => {
+                    const platform = PLATFORMS.find(p => p.key === platformKey);
+                    if (!platform) return null;
+
+                    return (
+                      <div
+                        key={platform.key}
+                        className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <PlatformIcon platform={platform.key as any} size={24} />
+                            <h3 className="font-semibold text-gray-900">{platform.name}</h3>
+                          </div>
+                          <button
+                            onClick={() => {
+                              const updated = followingPlatforms.filter(p => p !== platform.key);
+                              setFollowingPlatforms(updated);
+                              localStorage.setItem('followingPlatforms', JSON.stringify(updated));
+                            }}
+                            className="p-2 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-600 transition-colors"
+                          >
+                            <Heart className="w-4 h-4 fill-current" />
+                          </button>
+                        </div>
+                        <p className="text-xs text-gray-500">已关注</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           ) : activeTab === 'profile' ? (
             <div className="space-y-4">
@@ -696,6 +749,42 @@ export default function Home() {
                   </div>
                 </div>
               </div> */}
+
+              {/* 我的收藏和消息 */}
+              <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                <h3 className="text-lg font-semibold p-4 pb-2">我的</h3>
+
+                {/* 收藏 */}
+                <div className="border-t border-gray-100">
+                  <button
+                    onClick={() => {/* TODO: 显示收藏列表 */}}
+                    className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="text-left">
+                      <div className="font-medium">我的收藏</div>
+                      <div className="text-sm text-gray-500">{bookmarks.length} 条收藏内容</div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-400">{bookmarks.length}</span>
+                      <Bookmark className="w-5 h-5 text-gray-400" />
+                    </div>
+                  </button>
+                </div>
+
+                {/* 消息 */}
+                <div className="border-t border-gray-100">
+                  <button
+                    onClick={() => {/* TODO: 显示消息列表 */}}
+                    className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="text-left">
+                      <div className="font-medium">消息中心</div>
+                      <div className="text-sm text-gray-500">暂无新消息</div>
+                    </div>
+                    <MessageSquare className="w-5 h-5 text-gray-400" />
+                  </button>
+                </div>
+              </div>
 
               {/* 设置选项 */}
               <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -770,7 +859,7 @@ export default function Home() {
             </div>
           ) : newsList.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
-              {activeTab === 'favorites' ? '暂无收藏内容' : '暂无数据'}
+              暂无数据
             </div>
           ) : (groupedNews && groupedNews.length > 0) || (groupedRealtimeNews && groupedRealtimeNews.length > 0) ? (
             // 全部标签：显示平台卡片网格布局（响应式三列）
@@ -780,6 +869,8 @@ export default function Home() {
                   key={item.platform!.key}
                   platform={item.platform!}
                   news={item.news}
+                  isFollowing={followingPlatforms.includes(item.platform!.key)}
+                  onToggleFollow={handleToggleFollow}
                 />
               ))}
             </div>
@@ -791,7 +882,6 @@ export default function Home() {
                   key={item.id}
                   news={item}
                   platform={currentPlatformInfo}
-                  onRemove={activeTab === 'favorites' ? handleRemoveBookmark : undefined}
                 />
               ))}
 
@@ -830,8 +920,7 @@ export default function Home() {
           {[
             { key: 'hot' as TabType, label: '热榜', icon: Flame },
             { key: 'realtime' as TabType, label: '实时', icon: Newspaper },
-            { key: 'favorites' as TabType, label: '收藏', icon: Bookmark },
-            { key: 'messages' as TabType, label: '消息', icon: MessageSquare },
+            { key: 'following' as TabType, label: '关注', icon: Heart },
             { key: 'profile' as TabType, label: '我的', icon: User },
           ].map((tab) => {
             const Icon = tab.icon;

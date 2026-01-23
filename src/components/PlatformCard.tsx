@@ -4,17 +4,22 @@ import { useState, useEffect } from 'react';
 import NewsCard from './NewsCard';
 import PlatformIcon from './PlatformIcon';
 import type { NewsItem, PlatformInfo } from '@/types/news';
+import { Heart } from 'lucide-react';
 
 interface PlatformCardProps {
   platform: PlatformInfo;
   news: NewsItem[];
   limit?: number;
+  isFollowing?: boolean;
+  onToggleFollow?: (platformKey: string) => void;
 }
 
 export default function PlatformCard({
   platform,
   news,
   limit = 3,
+  isFollowing = false,
+  onToggleFollow,
 }: PlatformCardProps) {
   const [displayCount, setDisplayCount] = useState(limit);
 
@@ -40,6 +45,20 @@ export default function PlatformCard({
             {news.length}
           </span>
         </div>
+
+        {/* 关注按钮 */}
+        {onToggleFollow && (
+          <button
+            onClick={() => onToggleFollow(platform.key)}
+            className={`p-1.5 rounded-full transition-colors ${
+              isFollowing
+                ? 'text-red-500 bg-red-50 hover:bg-red-100'
+                : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
+            }`}
+          >
+            <Heart className={`w-4 h-4 ${isFollowing ? 'fill-current' : ''}`} />
+          </button>
+        )}
       </div>
 
       {/* 新闻列表 */}
