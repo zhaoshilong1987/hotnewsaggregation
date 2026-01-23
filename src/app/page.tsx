@@ -33,11 +33,26 @@ export default function Home() {
   const [loadingError, setLoadingError] = useState<string | null>(null);
   const [displayCount, setDisplayCount] = useState(30); // 初始显示30条
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isMobile, setIsMobile] = useState(false); // 检测是否是移动端
   const touchStartY = useRef(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const platformScrollRef = useRef<HTMLDivElement>(null);
   const platformTouchStartX = useRef(0);
+
+  // 检测是否是移动端
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+    };
+  }, []);
 
   // 初始化平台配置
   useEffect(() => {
@@ -542,6 +557,21 @@ export default function Home() {
                 );
               })}
             </div>
+
+            {/* 网页端刷新按钮 - 仅在非移动端显示 */}
+            {!isMobile && (
+              <button
+                onClick={() => {
+                  if (!isRefreshing) {
+                    handleRefresh();
+                  }
+                }}
+                disabled={isRefreshing}
+                className="flex-shrink-0 p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-all disabled:opacity-50"
+              >
+                <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              </button>
+            )}
 
             {/* 首页设置按钮 */}
             <button

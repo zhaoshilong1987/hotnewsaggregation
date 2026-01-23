@@ -230,6 +230,8 @@ textarea {
   transition: opacity 0.2s ease;
 }
 
+/* 父容器 hover 时显示滚动条 */
+.hover-show-scrollbar:hover .scrollbar-auto-hide::-webkit-scrollbar,
 .scrollbar-auto-hide:hover::-webkit-scrollbar {
   opacity: 1;
 }

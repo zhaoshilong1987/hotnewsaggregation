@@ -38,7 +38,7 @@ export default function PlatformCard({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
+    <div className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full hover-show-scrollbar">
       {/* 卡片头部 */}
       <div className="px-3 py-2 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-blue-50 to-white flex-shrink-0">
         <div className="flex items-center gap-2">
