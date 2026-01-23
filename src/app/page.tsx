@@ -307,6 +307,54 @@ export default function Home() {
 
   const groupedNews = getNewsByPlatform();
 
+  // 获取最新资讯按平台分组的数据（用于最新全部标签）
+  const getLatestNewsByPlatform = () => {
+    if (selectedPlatform !== 'all' || activeTab !== 'latest') {
+      return null;
+    }
+
+    // 按平台分组
+    const grouped = latestNews.reduce((acc: Record<string, any[]>, item) => {
+      const source = item.source;
+      if (!acc[source]) {
+        acc[source] = [];
+      }
+      acc[source].push(item);
+      return acc;
+    }, {});
+
+    console.log('getLatestNewsByPlatform - grouped data:', {
+      visiblePlatforms,
+      groupedKeys: Object.keys(grouped),
+      groupedCounts: Object.fromEntries(
+        Object.entries(grouped).map(([key, items]) => [key, items.length])
+      ),
+    });
+
+    // 按平台标签顺序排序
+    // 如果 visiblePlatforms 为空，使用所有平台作为默认值
+    const platformsToSort = visiblePlatforms.length > 0
+      ? visiblePlatforms
+      : Object.keys(grouped);
+
+    const sortedPlatforms = platformsToSort
+      .filter(key => grouped[key] && grouped[key].length > 0)
+      .map(key => ({
+        platform: PLATFORMS.find(p => p.key === key),
+        news: grouped[key],
+      }))
+      .filter(item => item.platform !== undefined);
+
+    console.log('getLatestNewsByPlatform - sorted platforms:', {
+      totalCount: sortedPlatforms.length,
+      platforms: sortedPlatforms.map(p => ({ name: p.platform?.name, newsCount: p.news.length })),
+    });
+
+    return sortedPlatforms;
+  };
+
+  const groupedLatestNews = getLatestNewsByPlatform();
+
   const fetchLatestNews = async () => {
     try {
       if (useRealApi) {
@@ -724,10 +772,10 @@ export default function Home() {
             <div className="text-center py-12 text-gray-500">
               {activeTab === 'favorites' ? '暂无收藏内容' : '暂无数据'}
             </div>
-          ) : groupedNews && groupedNews.length > 0 ? (
+          ) : (groupedNews && groupedNews.length > 0) || (groupedLatestNews && groupedLatestNews.length > 0) ? (
             // 全部标签：显示平台卡片网格布局（响应式三列）
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-              {groupedNews.map((item) => (
+              {(activeTab === 'hot' ? groupedNews : groupedLatestNews)?.map((item) => (
                 <PlatformCard
                   key={item.platform!.key}
                   platform={item.platform!}
