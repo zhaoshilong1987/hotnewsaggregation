@@ -30,6 +30,7 @@ export default function Home() {
   const [hiddenPlatforms, setHiddenPlatforms] = useState<string[]>([]);
   const [platformsLoaded, setPlatformsLoaded] = useState(false);
   const [useRealApi, setUseRealApi] = useState(true);
+  const [userRole, setUserRole] = useState<'admin' | 'user'>('user'); // 用户角色：管理员/普通用户
   // 立即初始化 mock 数据，确保页面不显示"暂无数据"
   const [hotNews, setHotNews] = useState<any[]>(getMockNews('all')); // 强制使用 mock 数据
   const [loadingError, setLoadingError] = useState<string | null>(null);
@@ -214,6 +215,12 @@ export default function Home() {
       } catch (e) {
         console.error('Failed to migrate old following platforms:', e);
       }
+    }
+
+    // 加载用户角色
+    const savedRole = localStorage.getItem('userRole');
+    if (savedRole && (savedRole === 'admin' || savedRole === 'user')) {
+      setUserRole(savedRole as 'admin' | 'user');
     }
   }, []);
 
@@ -573,6 +580,12 @@ export default function Home() {
     }
   };
 
+  const handleToggleRole = () => {
+    const newRole = userRole === 'admin' ? 'user' : 'admin';
+    setUserRole(newRole);
+    localStorage.setItem('userRole', newRole);
+  };
+
   const getVisiblePlatformList = () => {
     // 如果 visiblePlatforms 为空，返回所有平台作为默认值
     const platformsToUse = visiblePlatforms.length > 0
@@ -901,16 +914,39 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* 平台 API 配置 */}
+                {/* 角色切换 */}
                 <div className="border-t border-gray-100">
-                  <div className="flex items-center justify-between p-4">
-                    <div>
-                      <div className="font-medium">平台 API 配置</div>
-                      <div className="text-sm text-gray-500">管理各平台的 API 地址</div>
+                  <button
+                    onClick={handleToggleRole}
+                    className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="text-left">
+                      <div className="font-medium">角色切换</div>
+                      <div className="text-sm text-gray-500">当前角色：{userRole === 'admin' ? '超级管理员' : '普通用户'}</div>
                     </div>
-                    <PlatformSettings />
-                  </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-sm font-medium ${
+                        userRole === 'admin' ? 'text-red-600' : 'text-gray-600'
+                      }`}>
+                        {userRole === 'admin' ? '管理员' : '用户'}
+                      </span>
+                      <Switch checked={userRole === 'admin'} />
+                    </div>
+                  </button>
                 </div>
+
+                {/* 平台 API 配置（仅管理员可见） */}
+                {userRole === 'admin' && (
+                  <div className="border-t border-gray-100">
+                    <div className="flex items-center justify-between p-4">
+                      <div>
+                        <div className="font-medium">平台 API 配置</div>
+                        <div className="text-sm text-gray-500">管理各平台的 API 地址</div>
+                      </div>
+                      <PlatformSettings />
+                    </div>
+                  </div>
+                )}
 
                 {/* 订制首页 */}
                 <div className="border-t border-gray-100">

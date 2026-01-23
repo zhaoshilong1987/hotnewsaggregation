@@ -95,25 +95,52 @@ export default function PlatformSettings() {
   const handleSave = async (platform: any) => {
     try {
       setErrorMessage(null);
-      // 注意：此组件仅用于显示配置，实际修改需要在 @/lib/config.ts 中进行
-      setSaveSuccess(true);
-      setTimeout(() => {
-        setDialogMode('list');
-        setSaveSuccess(false);
-      }, 1500);
+
+      // 调用API保存配置
+      const response = await fetch('/api/platforms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(platform),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSaveSuccess(true);
+        setTimeout(() => {
+          setDialogMode('list');
+          setSaveSuccess(false);
+          loadPlatforms(); // 重新加载平台列表
+        }, 1500);
+      } else {
+        setErrorMessage(result.error || '保存失败');
+      }
     } catch (error) {
       console.error('保存平台配置失败:', error);
-      setErrorMessage('保存失败');
+      setErrorMessage('保存失败，请检查网络连接');
     }
   };
 
   const handleToggleEnabled = async (platform: any) => {
     try {
-      // 注意：此组件仅用于显示配置，实际修改需要在 @/lib/config.ts 中进行
-      setErrorMessage('请在 @/lib/config.ts 文件中直接修改配置');
+      // 调用API更新平台状态
+      const updatedPlatform = { ...platform, enabled: !platform.enabled };
+      const response = await fetch('/api/platforms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedPlatform),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        await loadPlatforms(); // 重新加载平台列表
+      } else {
+        setErrorMessage(result.error || '更新失败');
+      }
     } catch (error) {
       console.error('更新平台状态失败:', error);
-      setErrorMessage('更新失败');
+      setErrorMessage('更新失败，请检查网络连接');
     }
   };
 
@@ -166,9 +193,9 @@ export default function PlatformSettings() {
           <DialogHeader>
             <DialogTitle>平台 API 配置</DialogTitle>
             <DialogDescription>
-              管理各平台的数据获取接口配置（热榜 API 和最新 API）
+              管理各平台的数据获取接口配置（热榜 API 和实时 API）
               <br />
-              <span className="text-sm text-orange-600">提示：实际配置修改请在 src/lib/config.ts 文件中进行</span>
+              <span className="text-sm text-orange-600">⚠️ 当前为演示模式，配置不会实际保存</span>
             </DialogDescription>
           </DialogHeader>
 
@@ -262,9 +289,45 @@ export default function PlatformSettings() {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between text-sm text-gray-500">
+                      <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
                         <span>Method: {platform.method}</span>
                         <span>Priority: {platform.priority}</span>
+                      </div>
+
+                      {/* 操作按钮 */}
+                      <div className="flex items-center gap-2 pt-3 border-t">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleOpenEditDialog(platform)}
+                        >
+                          <Edit3 className="w-4 h-4 mr-1" />
+                          编辑
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleToggleEnabled(platform)}
+                        >
+                          {platform.enabled ? '禁用' : '启用'}
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={async () => {
+                            if (confirm(`确定要删除 ${platform.name} 吗？`)) {
+                              try {
+                                await fetch(`/api/platforms?id=${platform.id}`, { method: 'DELETE' });
+                                await loadPlatforms();
+                              } catch (error) {
+                                console.error('删除失败:', error);
+                              }
+                            }
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          删除
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -280,7 +343,7 @@ export default function PlatformSettings() {
           )}
 
           <div className="flex justify-between pt-4">
-            <Button onClick={handleOpenAddDialog} disabled>
+            <Button onClick={handleOpenAddDialog}>
               <Plus className="w-4 h-4 mr-2" />
               添加平台
             </Button>
