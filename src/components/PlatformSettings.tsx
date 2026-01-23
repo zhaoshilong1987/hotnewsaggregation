@@ -214,7 +214,7 @@ export default function PlatformSettings() {
         variant="ghost"
         size="sm"
         onClick={handleOpenListDialog}
-        className="text-orange-500 hover:text-orange-600 hover:bg-orange-50"
+        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
       >
         <Edit3 className="w-4 h-4 mr-1" />
         配置

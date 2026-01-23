@@ -196,19 +196,19 @@ export default function NewsCard({ news, platform, rank, onRemove, onBookmark, s
   return (
     <article
       onClick={handleCardClick}
-      className={`bg-white rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 border border-gray-100 hover:border-orange-300 cursor-pointer group overflow-hidden relative ${
+      className={`bg-white rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 border border-gray-100 hover:border-blue-300 cursor-pointer group overflow-hidden relative ${
         compact ? 'rounded-xl' : ''
       }`}
     >
       {/* 左侧装饰条 */}
-      <div className={`absolute left-0 top-0 bottom-0 w-1 ${compact ? 'w-0.5' : 'w-1'} bg-gradient-to-b from-orange-400 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+      <div className={`absolute left-0 top-0 bottom-0 w-1 ${compact ? 'w-0.5' : 'w-1'} bg-gradient-to-b from-blue-400 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
 
       <div className={`${compact ? 'p-3' : 'p-4'}`}>
         <div className={`${compact ? 'flex gap-2' : 'flex gap-3'}`}>
           {/* 内容区 */}
           <div className="flex-1 min-w-0">
             {/* 标题 */}
-            <h2 className={`${compact ? 'text-sm font-medium' : 'text-base font-semibold'} text-gray-900 ${compact ? 'mb-1' : 'mb-2'} line-clamp-2 leading-snug group-hover:text-orange-600 transition-colors`}>
+            <h2 className={`${compact ? 'text-sm font-medium' : 'text-base font-semibold'} text-gray-900 ${compact ? 'mb-1' : 'mb-2'} line-clamp-2 leading-snug group-hover:text-blue-600 transition-colors`}>
               {news.title}
             </h2>
 
@@ -237,13 +237,13 @@ export default function NewsCard({ news, platform, rank, onRemove, onBookmark, s
             {/* 元信息行 */}
             <div className="flex flex-wrap items-center gap-1.5 text-xs">
               {/* 发布时间 */}
-              <span className="flex items-center gap-1 text-gray-500 hover:text-orange-500 transition-colors">
+              <span className="flex items-center gap-1 text-gray-500 hover:text-blue-600 transition-colors">
                 <Clock className={`${compact ? 'w-3 h-3' : 'w-3.5 h-3.5'}`} />
                 {formatPublishTime(news.publishTime)}
               </span>
 
               {/* 热度值 */}
-              <div className="flex items-center gap-1 text-orange-500 font-semibold bg-orange-50 px-2 py-0.5 rounded-full">
+              <div className="flex items-center gap-1 text-blue-600 font-semibold bg-blue-50 px-2 py-0.5 rounded-full">
                 <Flame className={`${compact ? 'w-3 h-3' : 'w-3.5 h-3.5'}`} />
                 {formatHotScore(news.hotScore)}
               </div>
@@ -252,12 +252,12 @@ export default function NewsCard({ news, platform, rank, onRemove, onBookmark, s
               {showBookmark && !onRemove && (
                 <button
                   onClick={handleBookmark}
-                  className="p-1.5 hover:bg-orange-100 hover:shadow-sm rounded-lg transition-all duration-200 ml-1"
+                  className="p-1.5 hover:bg-blue-100 hover:shadow-sm rounded-lg transition-all duration-200 ml-1"
                   title={isBookmarked ? '取消收藏' : '收藏'}
                 >
                   <Heart
                     className={`${compact ? 'w-3.5 h-3.5' : 'w-4 h-4'} transition-all duration-200 ${
-                      isBookmarked ? 'text-red-500 fill-red-500 scale-110' : 'text-gray-400 hover:text-orange-500'
+                      isBookmarked ? 'text-red-500 fill-red-500 scale-110' : 'text-gray-400 hover:text-blue-600'
                     }`}
                   />
                 </button>
@@ -266,11 +266,11 @@ export default function NewsCard({ news, platform, rank, onRemove, onBookmark, s
               {/* 分享按钮 */}
               <button
                 onClick={handleShare}
-                className="p-1.5 hover:bg-orange-100 hover:shadow-sm rounded-lg transition-all duration-200 ml-1"
+                className="p-1.5 hover:bg-blue-100 hover:shadow-sm rounded-lg transition-all duration-200 ml-1"
                 title="分享"
               >
                 <Share2
-                  className={`${compact ? 'w-3.5 h-3.5' : 'w-4 h-4'} text-gray-400 hover:text-orange-500 transition-all duration-200`}
+                  className={`${compact ? 'w-3.5 h-3.5' : 'w-4 h-4'} text-gray-400 hover:text-blue-600 transition-all duration-200`}
                 />
               </button>
 
@@ -289,7 +289,7 @@ export default function NewsCard({ news, platform, rank, onRemove, onBookmark, s
               )}
 
               {/* 跳转图标 */}
-              <ExternalLink className={`${compact ? 'w-3 h-3' : 'w-3.5 h-3.5'} text-gray-400 group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all duration-300 flex-shrink-0 ml-1`} />
+              <ExternalLink className={`${compact ? 'w-3 h-3' : 'w-3.5 h-3.5'} text-gray-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all duration-300 flex-shrink-0 ml-1`} />
             </div>
           </div>
         </div>

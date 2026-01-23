@@ -230,8 +230,8 @@ export default function PlatformEditor({
         {/* 内容区 */}
         <div className="flex-1 overflow-y-auto">
           {/* 提示信息 */}
-          <div className="mx-4 mt-4 mb-2 py-2 px-3 bg-orange-50 rounded-lg">
-            <p className="text-xs text-orange-600">
+          <div className="mx-4 mt-4 mb-2 py-2 px-3 bg-blue-50 rounded-lg">
+            <p className="text-xs text-blue-600">
               💡 调整完成后自动保存，点击排序图标可上下移动平台，置顶的标签会优先显示
             </p>
           </div>

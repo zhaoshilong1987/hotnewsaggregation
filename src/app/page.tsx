@@ -498,21 +498,21 @@ export default function Home() {
       {/* 平台标签栏 - 固定在顶部，适配状态栏（仅在非"我的"和"消息"界面显示） */}
       {activeTab !== 'profile' && activeTab !== 'messages' && (
         <div
-          className="fixed top-0 left-0 right-0 z-50 bg-orange-500 shadow-md"
+          className="fixed top-0 left-0 right-0 z-50 bg-blue-600 shadow-md"
           style={{ paddingTop: 'max(0px, env(safe-area-inset-top) - 8px)' }}
         >
           <div
             ref={platformScrollRef}
-            className="flex items-center gap-2 px-3 py-2"
+            className="flex items-center gap-2 px-3 py-1.5"
             onTouchStart={handlePlatformTouchStart}
             onTouchEnd={handlePlatformTouchEnd}
           >
             {/* 全部按钮 */}
             <button
               onClick={() => setSelectedPlatform('all')}
-              className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all ${
+              className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-full transition-all ${
                 selectedPlatform === 'all'
-                  ? 'bg-white text-orange-500'
+                  ? 'bg-white text-blue-600'
                   : 'bg-white/20 text-white hover:bg-white/30'
               }`}
             >
@@ -530,9 +530,9 @@ export default function Home() {
                   <button
                     key={platformKey}
                     onClick={() => setSelectedPlatform(platformKey)}
-                    className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all ${
+                    className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-full transition-all ${
                       selectedPlatform === platformKey
-                        ? 'bg-white text-orange-500'
+                        ? 'bg-white text-blue-600'
                         : 'bg-white/20 text-white hover:bg-white/30'
                     }`}
                   >
@@ -575,7 +575,7 @@ export default function Home() {
         {/* 下拉刷新指示器 */}
         {isPulling && pullDistance > 0 && (
           <div className="flex justify-center py-2" style={{ transform: `translateY(${pullDistance - 30}px)` }}>
-            <RefreshCw className={`w-6 h-6 text-orange-500 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-6 h-6 text-blue-600 ${isRefreshing ? 'animate-spin' : ''}`} />
           </div>
         )}
 
@@ -594,8 +594,8 @@ export default function Home() {
               {/* 个人信息卡片 */}
               <div className="bg-white rounded-xl p-6 shadow-sm">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center">
-                    <User className="w-8 h-8 text-orange-500" />
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                    <User className="w-8 h-8 text-blue-600" />
                   </div>
                   <div>
                     <h2 className="text-xl font-bold">全网热点</h2>
@@ -609,11 +609,11 @@ export default function Home() {
                 <h3 className="text-lg font-semibold mb-3">数据统计</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-gray-50 rounded-lg p-3 text-center">
-                    <div className="text-2xl font-bold text-orange-500">{PLATFORMS.length}</div>
+                    <div className="text-2xl font-bold text-blue-600">{PLATFORMS.length}</div>
                     <div className="text-sm text-gray-500">支持平台</div>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3 text-center">
-                    <div className="text-2xl font-bold text-orange-500">{bookmarks.length}</div>
+                    <div className="text-2xl font-bold text-blue-600">{bookmarks.length}</div>
                     <div className="text-sm text-gray-500">收藏内容</div>
                   </div>
                 </div>
@@ -678,13 +678,13 @@ export default function Home() {
 
               {/* 错误提示 */}
               {loadingError && (
-                <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                   <div className="flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
+                    <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                     <div className="flex-1">
-                      <div className="font-medium text-orange-900">API 请求失败</div>
-                      <div className="text-sm text-orange-700 mt-1">{loadingError}</div>
-                      <div className="text-sm text-orange-600 mt-2">已自动切换到模拟数据</div>
+                      <div className="font-medium text-blue-900">API 请求失败</div>
+                      <div className="text-sm text-blue-700 mt-1">{loadingError}</div>
+                      <div className="text-sm text-blue-600 mt-2">已自动切换到模拟数据</div>
                     </div>
                   </div>
                 </div>
@@ -763,21 +763,21 @@ export default function Home() {
                 onClick={() => setActiveTab(tab.key)}
                 className={`flex-1 flex flex-col items-center justify-center gap-1 py-2 px-2 rounded-xl transition-all duration-300 relative group ${
                   isActive
-                    ? 'text-orange-500 bg-gradient-to-t from-orange-50 to-transparent'
+                    ? 'text-blue-600 bg-gradient-to-t from-blue-50 to-transparent'
                     : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
                 }`}
               >
                 {/* 激活状态指示器 */}
                 {isActive && (
-                  <div className="absolute -top-0.5 w-8 h-1 bg-orange-500 rounded-full shadow-lg shadow-orange-500/50" />
+                  <div className="absolute -top-0.5 w-8 h-1 bg-blue-600 rounded-full shadow-lg shadow-blue-600/50" />
                 )}
 
                 {/* 图标容器 */}
                 <div className={`relative transition-all duration-300 ${isActive ? 'scale-110' : 'scale-100 group-hover:scale-105'}`}>
-                  <Icon className={`w-6 h-6 transition-all duration-300 ${isActive ? 'fill-orange-500 drop-shadow-md' : ''}`} />
+                  <Icon className={`w-6 h-6 transition-all duration-300 ${isActive ? 'fill-blue-600 drop-shadow-md' : ''}`} />
                   {/* 激活状态的光晕效果 */}
                   {isActive && (
-                    <div className="absolute inset-0 bg-orange-400/20 blur-xl rounded-full animate-pulse" />
+                    <div className="absolute inset-0 bg-blue-400/20 blur-xl rounded-full animate-pulse" />
                   )}
                 </div>
 

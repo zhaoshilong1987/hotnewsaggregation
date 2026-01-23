@@ -54,7 +54,7 @@ export default function PlatformCard({
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
       {/* 卡片头部 */}
-      <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-orange-50 to-white">
+      <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-blue-50 to-white">
         <div className="flex items-center gap-2">
           <PlatformIcon platform={platform.key} size={20} />
           <h3 className="font-semibold text-gray-900">{platform.name}</h3>
@@ -65,7 +65,7 @@ export default function PlatformCard({
         {!isExpanded && hasMore && (
           <button
             onClick={handleExpand}
-            className="text-orange-500 hover:text-orange-600 transition-colors flex items-center gap-1 text-sm font-medium"
+            className="text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-1 text-sm font-medium"
           >
             查看全部
             <ChevronRight className="w-4 h-4" />
